@@ -145,30 +145,30 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     <button className="button-close" onClick={onClose}>×</button>
                 </div>
 
-                <div className="share-preview" ref={contentRef} style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)' }}>
-                    <div className="share-header" style={{ borderBottom: '3px solid #d4af37' }}>
-                        <h1 className="share-title" style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1f2937', margin: '0 0 0.5rem 0', letterSpacing: '-0.02em' }}>Resumen Financiero</h1>
+                <div className="share-preview" ref={contentRef} style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)', padding: '48px', width: '800px', boxSizing: 'border-box' }}>
+                    <div className="share-header" style={{ borderBottom: '3px solid #d4af37', textAlign: 'center', marginBottom: '32px', paddingBottom: '24px' }}>
+                        <h1 className="share-title" style={{ fontSize: '2.5rem', fontWeight: 800, color: '#1f2937', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>Resumen Financiero</h1>
                         <p className="share-period" style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, margin: 0 }}>{getDateRangeText()}</p>
                     </div>
 
-                    <div className="share-summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2.5rem' }}>
-                        <div className="share-card income" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', borderRadius: '12px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '2px solid #86efac', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
-                            <div className="share-card-icon" style={{ fontSize: '2.5rem', lineHeight: 1 }}>📈</div>
-                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div className="share-summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '40px' }}>
+                        <div className="share-card income" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', border: '2px solid #86efac', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
+                            <div className="share-card-icon" style={{ fontSize: '3rem', lineHeight: 1 }}>📈</div>
+                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
                                 <span className="share-card-label" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ingresos</span>
                                 <span className="share-card-value" style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1f2937', lineHeight: 1 }}>€{formatCurrency(totalIncome)}</span>
                             </div>
                         </div>
-                        <div className="share-card expense" style={{ background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', borderRadius: '12px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: '2px solid #fca5a5', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
-                            <div className="share-card-icon" style={{ fontSize: '2.5rem', lineHeight: 1 }}>📉</div>
-                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <div className="share-card expense" style={{ background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', border: '2px solid #fca5a5', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
+                            <div className="share-card-icon" style={{ fontSize: '3rem', lineHeight: 1 }}>📉</div>
+                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
                                 <span className="share-card-label" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gastos</span>
                                 <span className="share-card-value" style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1f2937', lineHeight: 1 }}>€{formatCurrency(totalExpense)}</span>
                             </div>
                         </div>
-                        <div className={`share-card balance ${balance >= 0 ? 'positive' : 'negative'}`} style={{ background: balance >= 0 ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' : 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', borderRadius: '12px', padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem', border: balance >= 0 ? '2px solid #86efac' : '2px solid #fca5a5', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
-                            <div className="share-card-icon" style={{ fontSize: '2.5rem', lineHeight: 1 }}>{balance >= 0 ? '💰' : '⚠️'}</div>
-                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                        <div className={`share-card balance ${balance >= 0 ? 'positive' : 'negative'}`} style={{ background: balance >= 0 ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' : 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', border: balance >= 0 ? '2px solid #86efac' : '2px solid #fca5a5', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
+                            <div className="share-card-icon" style={{ fontSize: '3rem', lineHeight: 1 }}>{balance >= 0 ? '💰' : '⚠️'}</div>
+                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
                                 <span className="share-card-label" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Balance</span>
                                 <span className="share-card-value" style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1f2937', lineHeight: 1 }}>€{formatCurrency(balance)}</span>
                             </div>
@@ -176,21 +176,21 @@ const ShareModal: React.FC<ShareModalProps> = ({
                     </div>
 
                     {categoryData.length > 0 && (
-                        <div className="share-chart" style={{ marginTop: '2rem' }}>
-                            <h3 className="share-chart-title" style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1f2937', margin: '0 0 1.5rem 0', textAlign: 'center' }}>Gastos por Categoría</h3>
-                            <div className="share-chart-bars" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                        <div className="share-chart" style={{ marginTop: '40px' }}>
+                            <h3 className="share-chart-title" style={{ fontSize: '1.75rem', fontWeight: 700, color: '#1f2937', margin: '0 0 24px 0', textAlign: 'center' }}>Gastos por Categoría</h3>
+                            <div className="share-chart-bars" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 {categoryData.map(([category, amount]) => {
                                     const percentage = (amount / maxCategoryAmount) * 100;
                                     return (
-                                        <div key={category} className="share-chart-item" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                            <div className="share-chart-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <span className="share-category-name" style={{ fontWeight: 600, color: '#1f2937', fontSize: '0.95rem' }}>{category}</span>
-                                                <span className="share-category-amount" style={{ fontWeight: 700, color: '#6b7280', fontSize: '0.9rem' }}>€{formatCurrency(amount)}</span>
+                                        <div key={category} className="share-chart-item" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                            <div className="share-chart-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
+                                                <span className="share-category-name" style={{ fontWeight: 600, color: '#1f2937', fontSize: '1rem' }}>{category}</span>
+                                                <span className="share-category-amount" style={{ fontWeight: 700, color: '#6b7280', fontSize: '1rem' }}>€{formatCurrency(amount)}</span>
                                             </div>
-                                            <div className="share-chart-bar-container" style={{ height: '32px', background: '#f3f4f6', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                                            <div className="share-chart-bar-container" style={{ height: '40px', background: '#f3f4f6', borderRadius: '10px', overflow: 'hidden', border: '2px solid #e5e7eb' }}>
                                                 <div
                                                     className="share-chart-bar-fill"
-                                                    style={{ width: `${percentage}%`, height: '100%', background: 'linear-gradient(90deg, #ca8a04 0%, #d4af37 100%)', borderRadius: '8px' }}
+                                                    style={{ width: `${percentage}%`, height: '100%', background: 'linear-gradient(90deg, #ca8a04 0%, #d4af37 100%)', borderRadius: '8px', transition: 'none' }}
                                                 />
                                             </div>
                                         </div>
@@ -200,7 +200,7 @@ const ShareModal: React.FC<ShareModalProps> = ({
                         </div>
                     )}
 
-                    <div className="share-footer" style={{ textAlign: 'center', marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '2px solid #e5e7eb' }}>
+                    <div className="share-footer" style={{ textAlign: 'center', marginTop: '40px', paddingTop: '24px', borderTop: '2px solid #e5e7eb' }}>
                         <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: 0, fontWeight: 500 }}>Generado el {new Date().toLocaleDateString('es-ES', {
                             day: 'numeric',
                             month: 'long',
