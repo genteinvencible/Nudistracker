@@ -424,23 +424,22 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 /* --- SUMMARY CARDS --- */
 .summary-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
 }
 
 .summary-card {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    padding: 1.75rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(0, 0, 0, 0.06);
+    background: #ffffff;
+    padding: 1.25rem;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: 2px solid #f3f4f6;
     display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    transition: all 0.3s ease;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: all 0.2s ease;
     position: relative;
-    overflow: hidden;
 }
 
 .summary-card::before {
@@ -448,36 +447,37 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     position: absolute;
     top: 0;
     left: 0;
-    width: 5px;
-    height: 100%;
-    background: var(--color-secondary);
-    transition: width 0.3s ease;
+    width: 100%;
+    height: 3px;
+    background: var(--color-primary);
+    border-radius: 10px 10px 0 0;
+    transition: height 0.2s ease;
 }
 
 .summary-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.15);
 }
 
 .summary-card:hover::before {
-    width: 8px;
+    height: 4px;
 }
 
 .summary-icon {
-    font-size: 2.5rem;
+    font-size: 1.5rem;
     line-height: 1;
     flex-shrink: 0;
+    opacity: 0.8;
 }
 
 .summary-content {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    flex: 1;
+    gap: 0.125rem;
 }
 
 .summary-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--color-text-secondary);
     font-weight: 600;
     text-transform: uppercase;
@@ -485,10 +485,14 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .summary-value {
-    font-size: 1.875rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    line-height: 1.2;
+    line-height: 1.1;
     color: var(--color-text-primary);
+}
+
+.summary-card.income {
+    border-color: rgba(34, 197, 94, 0.2);
 }
 
 .summary-card.income::before {
@@ -499,12 +503,30 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     color: var(--color-income);
 }
 
+.summary-card.income:hover {
+    border-color: var(--color-income);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+.summary-card.expense {
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
 .summary-card.expense::before {
     background: var(--color-expense);
 }
 
 .summary-card.expense .summary-value {
     color: var(--color-expense);
+}
+
+.summary-card.expense:hover {
+    border-color: var(--color-expense);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.summary-card.balance {
+    border-color: rgba(234, 179, 8, 0.2);
 }
 
 .summary-card.balance::before {
@@ -517,6 +539,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .summary-card.balance.negative .summary-value {
     color: var(--color-expense);
+}
+
+.summary-card.balance:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.15);
 }
 
 /* --- CATEGORY CHART --- */
@@ -1911,22 +1938,21 @@ table.transactions-table td .table-input {
 
     /* Summary cards mobile */
     .summary-cards {
-        gap: 1rem;
-        margin-bottom: 2rem;
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
     }
 
     .summary-card {
-        padding: 1.25rem;
-        gap: 1rem;
-        flex-direction: row;
+        padding: 1rem;
+        gap: 0.5rem;
     }
 
     .summary-icon {
-        font-size: 2rem;
+        font-size: 1.25rem;
     }
 
     .summary-value {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
     }
 
     .summary-label {
