@@ -644,19 +644,11 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                     {filePreview.length > 0 && (
                         <div className="preview-section">
                             <h4>Vista previa</h4>
-                            <p className="preview-help">Verifica que los importes se interpretan correctamente según el formato seleccionado.</p>
                             <div className="table-container">
                                 <table className="preview-table">
                                     <thead>
                                         <tr>
-                                            {fileHeaders.map((h, i) => (
-                                                <th key={i}>
-                                                    {h}
-                                                    {mappedColumns.amount && h === mappedColumns.amount && (
-                                                        <span className="interpreted-label">→ Interpretado</span>
-                                                    )}
-                                                </th>
-                                            ))}
+                                            {fileHeaders.map((h, i) => <th key={i}>{h}</th>)}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -669,13 +661,10 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                                                     if (isAmountColumn) {
                                                         const rawValue = String(cell || '');
                                                         const parsedValue = parseAmount(rawValue, numberFormat);
-                                                        return (
-                                                            <td key={j} className="amount-preview-cell">
-                                                                <span className="original-value">{rawValue}</span>
-                                                                <span className="arrow">→</span>
-                                                                <span className="parsed-value">{parsedValue.toFixed(2)}</span>
-                                                            </td>
-                                                        );
+                                                        const formattedValue = numberFormat === 'eur'
+                                                            ? parsedValue.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                            : parsedValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                                                        return <td key={j}>{formattedValue}</td>;
                                                     }
 
                                                     return <td key={j}>{String(cell || '')}</td>;
