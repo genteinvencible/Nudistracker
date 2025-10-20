@@ -907,7 +907,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .staged-footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-top: 1.5rem;
     padding-top: 1.5rem;
@@ -915,9 +915,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .staged-hint {
-    margin: 0;
+    margin: 0 0 1.5rem 0;
     color: var(--color-text-secondary);
     font-size: 0.9rem;
+    text-align: center;
 }
 
 /* --- TRANSACTIONS PANEL --- */
