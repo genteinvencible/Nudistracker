@@ -599,6 +599,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .preview-section {
     margin-top: 2rem;
+    margin-bottom: 2rem;
 }
 
 .preview-section h4 {
