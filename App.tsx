@@ -630,14 +630,14 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
             <img src="https://nudistainvestor.com/wp-content/uploads/2025/10/nudsita-need-you.png" alt="Nudistracker Logo" className="welcome-logo-main" />
             <div className="welcome-content">
                 <div className="welcome-card">
-                    <h2>Bienvenido a Nudistracker</h2>
+                    <h2>This is Nudistracker:</h2>
                     <p>La forma más sencilla de entender tus finanzas.</p>
                     <div className="instructions">
-                        <h4>Cómo empezar:</h4>
+                        <h4>La F de f*ck you money empieza aquí:</h4>
                         <ol className="instructions-list">
                             <li>Exporta tus movimientos bancarios a un archivo CSV o Excel.</li>
                             <li>Haz clic en "Nueva Sesión" e importa tu archivo.</li>
-                            <li>¡Visualiza, categoriza y entiende a dónde va tu dinero!</li>
+                            <li>Visualiza, categoriza y entiende a dónde va tu dinero.</li>
                         </ol>
                     </div>
                     {hasSession && (
