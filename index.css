@@ -1935,40 +1935,282 @@ table.transactions-table td .table-input {
         min-width: 100%;
     }
 
-    /* Inline editable inputs mobile */
-    .inline-edit-input,
-    .inline-edit-select {
-        font-size: 0.9rem;
-        padding: 0.5rem;
-    }
-
-    .inline-edit-select {
-        background-position: right 0.5rem center;
-        padding-right: 2rem;
+    /* Mobile card layout for transactions */
+    .transactions-table-container {
+        overflow-x: visible;
     }
 
     .transactions-table {
-        font-size: 0.85rem;
+        display: block;
+        font-size: 1rem;
     }
 
-    .th-date,
-    .td-date {
-        width: 100px;
+    .transactions-table thead {
+        display: none;
     }
 
-    .th-amount,
-    .td-amount {
-        width: 100px;
+    .transactions-table tbody {
+        display: block;
     }
 
-    .th-category,
+    .transactions-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .transactions-table tbody tr.ignored {
+        opacity: 0.5;
+        background: #fafafa;
+    }
+
+    .transactions-table tbody tr:hover {
+        background: white;
+    }
+
+    .transactions-table tbody tr.ignored:hover {
+        background: #fafafa;
+    }
+
+    .transactions-table td {
+        display: block;
+        padding: 0;
+        border: none;
+        text-align: left;
+    }
+
+    .td-date,
+    .td-description,
+    .td-amount,
     .td-category {
-        width: 130px;
+        width: 100%;
+        margin-bottom: 0.75rem;
     }
 
-    .th-actions,
+    .td-date::before {
+        content: 'Fecha';
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.35rem;
+    }
+
+    .td-description::before {
+        content: 'Descripción';
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.35rem;
+    }
+
+    .td-amount::before {
+        content: 'Importe';
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.35rem;
+    }
+
+    .td-category::before {
+        content: 'Categoría';
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.35rem;
+    }
+
     .td-actions {
-        width: 60px;
+        width: 100%;
+        margin-bottom: 0;
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .inline-edit-input,
+    .inline-edit-select {
+        font-size: 1rem;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        width: 100%;
+    }
+
+    .inline-edit-input:hover,
+    .inline-edit-select:hover {
+        background-color: white;
+        border-color: #d1d5db;
+    }
+
+    .inline-edit-input:focus,
+    .inline-edit-select:focus {
+        background-color: white;
+        border-color: var(--color-primary);
+    }
+
+    .inline-edit-select {
+        background-position: right 0.75rem center;
+        padding-right: 2.5rem;
+    }
+
+    .inline-edit-input.amount-input {
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    /* Mobile card layout for staged transactions */
+    .staged-table-container {
+        overflow-x: visible;
+        border: none;
+        background-color: transparent;
+    }
+
+    .staged-table {
+        display: block;
+    }
+
+    .staged-table thead {
+        display: none;
+    }
+
+    .staged-table tbody {
+        display: block;
+    }
+
+    .staged-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+
+    .staged-table tbody tr:hover {
+        background: white;
+    }
+
+    .staged-table td {
+        display: block;
+        padding: 0;
+        border: none;
+        text-align: left;
+    }
+
+    .staged-table .date-col,
+    .staged-table .description-col,
+    .staged-table .amount-col,
+    .staged-table .category-col {
+        width: 100%;
+        margin-bottom: 0.75rem;
+    }
+
+    .staged-table .date-col::before {
+        content: 'Fecha';
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.35rem;
+    }
+
+    .staged-table .description-col::before {
+        content: 'Descripción';
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.35rem;
+    }
+
+    .staged-table .amount-col::before {
+        content: 'Importe';
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.35rem;
+    }
+
+    .staged-table .category-col::before {
+        content: 'Categoría';
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.35rem;
+    }
+
+    .staged-table .actions-col {
+        width: 100%;
+        margin-bottom: 0;
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .staged-input,
+    .staged-select {
+        font-size: 1rem;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid #e5e7eb;
+        background-color: #f9fafb;
+        width: 100%;
+    }
+
+    .staged-input:hover,
+    .staged-select:hover {
+        background-color: white;
+        border-color: #d1d5db;
+    }
+
+    .staged-input:focus,
+    .staged-select:focus {
+        background-color: white;
+        border-color: var(--color-primary);
+    }
+
+    .staged-input.amount-input {
+        font-size: 1.25rem;
+        font-weight: 700;
+        text-align: left;
+    }
+
+    .date-badge {
+        display: inline-block;
+        padding: 0.5rem 0.75rem;
+        background-color: #f3f4f6;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 0.95rem;
     }
 
     .categories-grid {
