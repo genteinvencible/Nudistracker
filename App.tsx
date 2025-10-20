@@ -53,8 +53,44 @@ const normalizeString = (str: string): string => {
 const parseDate = (dateValue: any): string => {
     if (!dateValue) return 'Invalid Date';
 
-    // Handle Excel's numeric date format
-    if (typeof dateValue === 'number') {
+    // Handle string dates first (most common)
+    if (typeof dateValue === 'string') {
+        const trimmed = dateValue.trim();
+
+        // Check if it's already in DD/MM/YYYY or similar format
+        if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(trimmed)) {
+            const parts = trimmed.split(/[\/\-]/);
+            // Assume European format DD/MM/YYYY
+            const day = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const year = parts[2].length === 2 ? 2000 + parseInt(parts[2], 10) : parseInt(parts[2], 10);
+
+            if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+                const date = new Date(year, month - 1, day);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString('es-ES');
+                }
+            }
+        }
+
+        // Check if it's in YYYY-MM-DD format (ISO)
+        if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(trimmed)) {
+            const date = new Date(trimmed);
+            if (!isNaN(date.getTime())) {
+                return date.toLocaleDateString('es-ES');
+            }
+        }
+
+        // Try standard Date parsing as fallback
+        const date = new Date(trimmed);
+        if (!isNaN(date.getTime())) {
+            return date.toLocaleDateString('es-ES');
+        }
+    }
+
+    // Handle Excel's numeric date format (only if it's a reasonable Excel date)
+    // Excel dates typically range from 1 (1900-01-01) to ~45000 (year 2023+)
+    if (typeof dateValue === 'number' && dateValue > 0 && dateValue < 100000) {
         const excelEpoch = new Date(1899, 11, 30);
         const date = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
         // Basic timezone offset correction
@@ -64,20 +100,10 @@ const parseDate = (dateValue: any): string => {
             return correctedDate.toLocaleDateString('es-ES');
         }
     }
-    
-    // Handle string dates
-    if (typeof dateValue === 'string') {
-        // Attempt to parse various common formats
-        const date = new Date(dateValue.split('/').reverse().join('-')); // DD/MM/YYYY
-        if (!isNaN(date.getTime())) {
-            return date.toLocaleDateString('es-ES');
-        }
-    }
 
-    // Fallback for standard date objects or other parsable formats
-    const date = new Date(dateValue);
-    if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString('es-ES');
+    // Fallback for Date objects
+    if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+        return dateValue.toLocaleDateString('es-ES');
     }
 
     return 'Invalid Date';
