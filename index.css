@@ -539,10 +539,18 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     margin: 2rem 0;
     padding: 1.5rem;
     border-radius: var(--border-radius);
-    background-color: var(--color-background);
+    background-color: #FFF9E6;
+    border: 2px solid var(--color-primary);
 }
 .number-format-selector h4 {
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-text-primary);
+    font-size: 1.1rem;
+}
+.number-format-selector .format-help {
+    margin-bottom: 1.25rem;
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
 }
 .radio-group {
     display: flex;
@@ -551,13 +559,42 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 .radio-group label {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
     cursor: pointer;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 2px solid var(--color-border);
+    background-color: var(--color-surface);
+    transition: all 0.2s ease;
+}
+.radio-group label:hover {
+    border-color: var(--color-primary);
+    background-color: #FFFDF5;
+}
+.radio-group label.selected {
+    border-color: var(--color-primary);
+    background-color: #FFFDF5;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.2);
 }
 .radio-group input[type="radio"] {
     width: auto;
-    accent-color: var(--color-secondary);
+    margin-top: 0.25rem;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+.radio-group .format-option {
+    flex: 1;
+}
+.radio-group .format-option strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--color-text-primary);
+    font-size: 1rem;
+}
+.radio-group .format-option small {
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
 }
 
 .preview-table-container {

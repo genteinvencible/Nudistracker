@@ -621,15 +621,22 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                     </div>
 
                     <div className="number-format-selector">
-                        <h4>Formato de los números</h4>
+                        <h4>⚠️ Formato de los números en tu archivo</h4>
+                        <p className="format-help">Selecciona cómo aparecen los importes en tu archivo CSV/Excel:</p>
                         <div className="radio-group">
-                            <label>
+                            <label className={numberFormat === 'eur' ? 'selected' : ''}>
                                 <input type="radio" name="number-format" value="eur" checked={numberFormat === 'eur'} onChange={() => setNumberFormat('eur')} />
-                                <span>1.234,56 (Punto para miles, coma para decimales)</span>
+                                <span className="format-option">
+                                    <strong>Formato Europeo:</strong> 1.234,56<br/>
+                                    <small>(Punto para miles, coma para decimales)</small>
+                                </span>
                             </label>
-                            <label>
+                            <label className={numberFormat === 'usa' ? 'selected' : ''}>
                                 <input type="radio" name="number-format" value="usa" checked={numberFormat === 'usa'} onChange={() => setNumberFormat('usa')} />
-                                <span>1,234.56 (Coma para miles, punto para decimales)</span>
+                                <span className="format-option">
+                                    <strong>Formato Americano:</strong> 1,234.56<br/>
+                                    <small>(Coma para miles, punto para decimales)</small>
+                                </span>
                             </label>
                         </div>
                     </div>
