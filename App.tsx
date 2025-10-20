@@ -665,7 +665,7 @@ interface AppHeaderProps {
 const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavigate }) => {
     return (
         <header className="app-header">
-            <div className="app-logo-title">
+            <div className="app-logo-title" onClick={onGoToWelcome}>
                 <h1>Nudistracker</h1>
             </div>
             <nav>
@@ -674,11 +674,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavi
                 <button className={activeView === 'import' ? 'active' : ''} onClick={() => onNavigate('import')}>Importar</button>
                 <button className={activeView === 'how-it-works' ? 'active' : ''} onClick={() => onNavigate('how-it-works')}>Cómo funciona</button>
             </nav>
-            <div className="header-footer">
-                <button className="exit-button" onClick={onGoToWelcome} title="Volver al inicio">
-                    Salir
-                </button>
-            </div>
         </header>
     );
 };
