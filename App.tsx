@@ -937,14 +937,44 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
                 {showAddForm && (
                     <div className="add-form">
                         <h4>Nueva Transacción</h4>
-                        <div className="form-row">
-                            <input type="date" value={newTransactionData.date} onChange={e => setNewTransactionData(prev => ({ ...prev, date: e.target.value }))} />
-                            <input type="text" placeholder="Descripción" value={newTransactionData.description} onChange={e => setNewTransactionData(prev => ({ ...prev, description: e.target.value }))} />
-                            <input type="number" placeholder="Importe" value={newTransactionData.amount} onChange={e => setNewTransactionData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} />
-                            <select value={newTransactionData.category} onChange={e => setNewTransactionData(prev => ({ ...prev, category: e.target.value }))}>
-                                <option value="">Sin categoría</option>
-                                {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                            </select>
+                        <div className="form-grid">
+                            <div className="form-field">
+                                <label>Fecha</label>
+                                <input
+                                    type="date"
+                                    value={newTransactionData.date}
+                                    onChange={e => setNewTransactionData(prev => ({ ...prev, date: e.target.value }))}
+                                />
+                            </div>
+                            <div className="form-field full-width">
+                                <label>Descripción</label>
+                                <input
+                                    type="text"
+                                    placeholder="Ej: Compra en supermercado"
+                                    value={newTransactionData.description}
+                                    onChange={e => setNewTransactionData(prev => ({ ...prev, description: e.target.value }))}
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label>Importe (€)</label>
+                                <input
+                                    type="number"
+                                    placeholder="0.00"
+                                    value={newTransactionData.amount}
+                                    onChange={e => setNewTransactionData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))}
+                                    step="0.01"
+                                />
+                            </div>
+                            <div className="form-field">
+                                <label>Categoría</label>
+                                <select
+                                    value={newTransactionData.category}
+                                    onChange={e => setNewTransactionData(prev => ({ ...prev, category: e.target.value }))}
+                                >
+                                    <option value="">Sin categoría</option>
+                                    {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                </select>
+                            </div>
                         </div>
                         <div className="form-actions">
                             <button className="button primary" onClick={handleAdd}>Añadir</button>
