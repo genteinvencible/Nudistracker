@@ -937,21 +937,7 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
             )}
 
             <div className="panel transactions-panel">
-                <div className="panel-header">
-                    <div className="panel-header-main">
-                        <h3>Tus Movimientos</h3>
-                        <span className="transaction-count">{transactions.length} transacciones</span>
-                    </div>
-                    <div className="header-actions">
-                        <button className="button secondary" onClick={onAutoCategorize}>
-                            <span className="button-icon-inline">✨</span>
-                            Auto-categorizar
-                        </button>
-                        <button className="button primary" onClick={() => setShowAddForm(true)}>
-                            + Añadir Transacción
-                        </button>
-                    </div>
-                </div>
+                <h2 className="movements-title">Todos los Movimientos</h2>
 
                 {showAddForm && (
                     <div className="add-form">
@@ -1002,25 +988,80 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
                     </div>
                 )}
 
-                <div className="filters-section">
-                    <div className="filters">
-                        <div className="filter-group">
-                            <label htmlFor="category-filter">Categoría</label>
-                            <select id="category-filter" className="filter-select" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+                <div className="movements-filters">
+                    <div className="date-filters-row">
+                        <div className="date-filter-group">
+                            <label>Rango de Fechas</label>
+                            <div className="date-inputs">
+                                <input type="date" className="date-input-clean" value={startDateFilter} onChange={e => setStartDateFilter(e.target.value)} placeholder="dd/mm/aaaa" />
+                                <input type="date" className="date-input-clean" value={endDateFilter} onChange={e => setEndDateFilter(e.target.value)} placeholder="dd/mm/aaaa" />
+                            </div>
+                        </div>
+                        <div className="category-filter-group">
+                            <label>Categoría</label>
+                            <select className="category-select-clean" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
                                 <option value="all">Todas</option>
                                 <option value="uncategorized">Sin categorizar</option>
                                 {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
                         </div>
-                        <div className="filter-group">
-                            <label htmlFor="start-date">Desde</label>
-                            <input id="start-date" className="filter-input" type="date" value={startDateFilter} onChange={e => setStartDateFilter(e.target.value)} />
-                        </div>
-                        <div className="filter-group">
-                            <label htmlFor="end-date">Hasta</label>
-                            <input id="end-date" className="filter-input" type="date" value={endDateFilter} onChange={e => setEndDateFilter(e.target.value)} />
-                        </div>
                     </div>
+                    <div className="quick-filters">
+                        <button className="quick-filter-btn" onClick={() => {
+                            const now = new Date();
+                            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                            setStartDateFilter(firstDay.toISOString().split('T')[0]);
+                            setEndDateFilter(new Date().toISOString().split('T')[0]);
+                        }}>Este Mes</button>
+                        <button className="quick-filter-btn" onClick={() => {
+                            const now = new Date();
+                            const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                            const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+                            setStartDateFilter(firstDay.toISOString().split('T')[0]);
+                            setEndDateFilter(lastDay.toISOString().split('T')[0]);
+                        }}>Mes Pasado</button>
+                        <button className="quick-filter-btn" onClick={() => {
+                            const now = new Date();
+                            const firstDay = new Date(now.getFullYear(), 0, 1);
+                            setStartDateFilter(firstDay.toISOString().split('T')[0]);
+                            setEndDateFilter(new Date().toISOString().split('T')[0]);
+                        }}>Este Año</button>
+                        <button className="quick-filter-btn" onClick={() => {
+                            setStartDateFilter('');
+                            setEndDateFilter('');
+                        }}>Todo</button>
+                    </div>
+                    <div className="action-buttons-row">
+                        <button className="action-btn outline" onClick={onAutoCategorize}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                <polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline>
+                                <polyline points="7.5 19.79 7.5 14.6 3 12"></polyline>
+                                <polyline points="21 12 16.5 14.6 16.5 19.79"></polyline>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                            </svg>
+                            Auto-categorizar
+                        </button>
+                        <button className="action-btn outline" onClick={() => setShowShareModal(true)}>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                                <polyline points="16 6 12 2 8 6"></polyline>
+                                <line x1="12" y1="2" x2="12" y2="15"></line>
+                            </svg>
+                            Exportar Resumen
+                        </button>
+                        <button className="action-btn primary" onClick={() => setShowAddForm(true)}>
+                            + Añadir Movimiento
+                        </button>
+                    </div>
+                    {(categoryFilter !== 'all' || startDateFilter || endDateFilter) && (
+                        <button className="clear-filters-btn" onClick={() => {
+                            setCategoryFilter('all');
+                            setStartDateFilter('');
+                            setEndDateFilter('');
+                        }}>Limpiar filtros</button>
+                    )}
                 </div>
 
                 {transactions.length === 0 ? (
