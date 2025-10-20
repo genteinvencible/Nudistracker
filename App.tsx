@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as XLSX from 'xlsx';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import ShareModal from './ShareModal';
 
 // --- TYPE DEFINITIONS ---
 interface Category {
@@ -833,6 +832,7 @@ interface TransactionsViewProps {
 
 const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpdateTransaction, onAddTransaction, onAutoCategorize, allCategories, categoryFilter, setCategoryFilter, startDateFilter, setStartDateFilter, endDateFilter, setEndDateFilter, numberFormat }) => {
     const [showAddForm, setShowAddForm] = useState(false);
+    const [showShareModal, setShowShareModal] = useState(false);
     const [newTransactionData, setNewTransactionData] = useState({ date: '', description: '', amount: 0, category: '' });
 
     const handleAdd = () => {
@@ -866,7 +866,12 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
     return (
         <div className="transactions-view">
             <div className="panel summary-panel">
-                <h2>Resumen Financiero</h2>
+                <div className="summary-panel-header">
+                    <h2>Resumen Financiero</h2>
+                    <button className="button secondary share-button" onClick={() => setShowShareModal(true)}>
+                        📤 Compartir Resumen
+                    </button>
+                </div>
                 <div className="summary-cards">
                     <div className="summary-card income">
                         <div className="summary-icon">📈</div>
@@ -916,6 +921,20 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
                     </div>
                 )}
             </div>
+
+            {showShareModal && (
+                <ShareModal
+                    totalIncome={totalIncome}
+                    totalExpense={totalExpense}
+                    balance={balance}
+                    categoryData={categoryData}
+                    maxCategoryAmount={maxCategoryAmount}
+                    formatCurrency={(amount) => formatCurrency(amount, numberFormat)}
+                    startDateFilter={startDateFilter}
+                    endDateFilter={endDateFilter}
+                    onClose={() => setShowShareModal(false)}
+                />
+            )}
 
             <div className="panel transactions-panel">
                 <div className="panel-header">
