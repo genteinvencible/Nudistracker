@@ -736,13 +736,16 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                                             />
                                         </td>
                                         <td className="amount-col">
-                                            <input
-                                                type="number"
-                                                className={`staged-input amount-input ${t.amount >= 0 ? 'positive' : 'negative'}`}
-                                                value={t.amount}
-                                                onChange={e => onUpdateStaged(t.id, { amount: parseFloat(e.target.value) || 0 })}
-                                                step="0.01"
-                                            />
+                                            <div className="amount-wrapper">
+                                                <input
+                                                    type="number"
+                                                    className={`staged-input amount-input ${t.amount >= 0 ? 'positive' : 'negative'}`}
+                                                    value={t.amount}
+                                                    onChange={e => onUpdateStaged(t.id, { amount: parseFloat(e.target.value) || 0 })}
+                                                    step="0.01"
+                                                />
+                                                <span className="currency-symbol">€</span>
+                                            </div>
                                         </td>
                                         <td className="category-col">
                                             <select

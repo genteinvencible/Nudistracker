@@ -861,7 +861,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .staged-table .amount-col {
-    width: 140px;
+    width: 160px;
 }
 
 .staged-table .category-col {
@@ -932,9 +932,25 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
 }
 
+.amount-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+}
+
 .staged-input.amount-input {
     font-weight: 600;
     text-align: right;
+    flex: 1;
+    padding-right: 0.5rem;
+}
+
+.currency-symbol {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
 }
 
 .staged-input.amount-input.positive {
