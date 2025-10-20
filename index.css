@@ -861,7 +861,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .staged-table .amount-col {
-    width: 160px;
+    width: 180px;
+    min-width: 180px;
 }
 
 .staged-table .category-col {
@@ -944,6 +945,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     text-align: right;
     flex: 1;
     padding-right: 0.5rem;
+    min-width: 0;
+    width: 100%;
 }
 
 .currency-symbol {
