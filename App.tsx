@@ -1512,113 +1512,55 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, o
 const HowItWorksView: React.FC = () => {
     return (
         <div className="how-it-works-view">
-            <div className="panel how-it-works-header">
-                <h2>Cómo funciona Nudistracker</h2>
-                <p className="subtitle">Gestiona tus finanzas en 3 pasos simples</p>
-            </div>
-
-            <div className="steps-grid">
-                <div className="step-card">
-                    <div className="step-number">1</div>
-                    <div className="step-icon">📁</div>
-                    <h3>Importa tus movimientos</h3>
-                    <p>Descarga tu extracto bancario en formato CSV o Excel desde tu banco y súbelo a Nudistracker.</p>
-                    <div className="step-details">
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Detección automática de columnas</span>
-                        </div>
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Soporta formatos EUR y USA</span>
-                        </div>
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Vista previa antes de importar</span>
-                        </div>
+            <div className="steps-grid-modern">
+                <div className="step-card-modern">
+                    <div className="step-icon-circle">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 9l-5 5-5-5M12 12.8V2.5"/>
+                        </svg>
                     </div>
+                    <h3>1. Exporta tus Movimientos</h3>
+                    <p>Entra en la web de tu banco y descarga un archivo (CSV o Excel) con tus últimos movimientos.</p>
                 </div>
 
-                <div className="step-card">
-                    <div className="step-number">2</div>
-                    <div className="step-icon">🏷️</div>
-                    <h3>Crea tus categorías</h3>
-                    <p>Define categorías personalizadas para tus ingresos y gastos, y añade palabras clave.</p>
-                    <div className="step-details">
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Categorías ilimitadas</span>
-                        </div>
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Auto-categorización inteligente</span>
-                        </div>
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Personaliza con palabras clave</span>
-                        </div>
+                <div className="step-card-modern">
+                    <div className="step-icon-circle">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
                     </div>
+                    <h3>2. Importa el Archivo</h3>
+                    <p>Vuelve aquí, ve a la pestaña "Importar" y sube el archivo que has descargado. Mapea las columnas de fecha, descripción e importe.</p>
                 </div>
 
-                <div className="step-card">
-                    <div className="step-number">3</div>
-                    <div className="step-icon">📊</div>
-                    <h3>Visualiza y analiza</h3>
-                    <p>Comprende a dónde va tu dinero con gráficos claros y resúmenes detallados.</p>
-                    <div className="step-details">
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Gráficos interactivos</span>
-                        </div>
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Filtros por categoría y fecha</span>
-                        </div>
-                        <div className="detail-item">
-                            <CheckIcon />
-                            <span>Exporta y comparte resultados</span>
-                        </div>
+                <div className="step-card-modern">
+                    <div className="step-icon-circle">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                            <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                        </svg>
                     </div>
+                    <h3>3. Crea y Asigna Categorías</h3>
+                    <p>Ve a "Categorías" para crear tus propias clasificaciones (ej: "Supermercado"). Añade palabras clave (ej: "Mercadona") para que la app categorice tus movimientos automáticamente.</p>
                 </div>
-            </div>
 
-            <div className="panel tips-section">
-                <h3>💡 Consejos para mejores resultados</h3>
-                <div className="tips-grid">
-                    <div className="tip-card">
-                        <div className="tip-icon">🎯</div>
-                        <h4>Palabras clave específicas</h4>
-                        <p>Usa términos únicos que aparezcan en tus transacciones para mejorar la auto-categorización</p>
+                <div className="step-card-modern">
+                    <div className="step-icon-circle">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                        </svg>
                     </div>
-                    <div className="tip-card">
-                        <div className="tip-icon">🔍</div>
-                        <h4>Revisa regularmente</h4>
-                        <p>Comprueba las transacciones sin categoría y ajústalas manualmente para mayor precisión</p>
-                    </div>
-                    <div className="tip-card">
-                        <div className="tip-icon">💾</div>
-                        <h4>Exporta tus datos</h4>
-                        <p>Descarga resúmenes periódicamente como respaldo y para compartir con tu asesor financiero</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="panel privacy-section">
-                <div className="privacy-icon">🔒</div>
-                <div className="privacy-content">
-                    <h3>Tu privacidad es nuestra prioridad</h3>
-                    <p>Todos tus datos financieros se guardan únicamente en tu navegador. Nudistracker no envía ni almacena tu información en ningún servidor externo. Tú tienes el control total de tus datos.</p>
+                    <h3>4. Analiza tus Finanzas</h3>
+                    <p>En "Movimientos", visualiza el resumen de tus ingresos y gastos y el desglose por categoría para entender a dónde va tu dinero.</p>
                 </div>
             </div>
         </div>
     );
 };
-
-const CheckIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-);
 
 // --- ICONS (SVG) ---
 const UploadIcon = () => (
