@@ -893,7 +893,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .staged-table .category-col {
-    width: 180px;
+    width: 200px;
+    min-width: 200px;
 }
 
 .staged-table .actions-col {
