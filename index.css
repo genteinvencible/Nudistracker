@@ -863,6 +863,36 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     text-align: center;
 }
 
+.button-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.button-icon:hover {
+    background-color: #f3f4f6;
+    color: var(--color-text-primary);
+}
+
+.button-icon.danger {
+    color: #ef4444;
+}
+
+.button-icon.danger:hover {
+    background-color: #fef2f2;
+    color: #dc2626;
+    transform: scale(1.05);
+}
+
 .date-badge {
     display: inline-block;
     padding: 0.4rem 0.75rem;
