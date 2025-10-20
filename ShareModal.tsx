@@ -163,29 +163,66 @@ const ShareModal: React.FC<ShareModalProps> = ({
                 }}>
                     <div className="share-header" style={{ borderBottom: '3px solid #d4af37', textAlign: 'center', marginBottom: isMobile ? '20px' : '32px', paddingBottom: isMobile ? '16px' : '24px' }}>
                         <h1 className="share-title" style={{ fontSize: isMobile ? '1.75rem' : '2.5rem', fontWeight: 800, color: '#1f2937', margin: '0 0 8px 0', letterSpacing: '-0.02em' }}>Resumen Financiero</h1>
-                        <p className="share-period" style={{ fontSize: isMobile ? '0.875rem' : '1rem', color: '#6b7280', fontWeight: 600, margin: 0 }}>{getDateRangeText()}</p>
+                        <p className="share-period" style={{ fontSize: isMobile ? '0.875rem' : '1rem', color: '#6b7280', fontWeight: 600, margin: '0 0 8px 0' }}>{getDateRangeText()}</p>
+                        <p className="share-branding" style={{ fontSize: isMobile ? '0.7rem' : '0.75rem', color: '#9ca3af', fontWeight: 500, margin: 0, letterSpacing: '0.05em' }}>Nudistracker</p>
                     </div>
 
                     <div className="share-summary-cards" style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: isMobile ? '16px' : '20px', marginBottom: isMobile ? '24px' : '40px' }}>
-                        <div className="share-card income" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)', borderRadius: '12px', padding: isMobile ? '20px' : '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', border: '2px solid #86efac', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
-                            <div className="share-card-icon" style={{ fontSize: isMobile ? '2.5rem' : '3rem', lineHeight: 1 }}>📈</div>
-                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                                <span className="share-card-label" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ingresos</span>
-                                <span className="share-card-value" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', fontWeight: 800, color: '#1f2937', lineHeight: 1 }}>€{formatCurrency(totalIncome)}</span>
+                        <div className="share-card income" style={{
+                            background: '#ffffff',
+                            borderRadius: '10px',
+                            padding: isMobile ? '16px' : '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                            border: '2px solid rgba(34, 197, 94, 0.2)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: '#27AE60', borderRadius: '10px 10px 0 0' }}></div>
+                            <div className="share-card-icon" style={{ fontSize: isMobile ? '1.5rem' : '1.5rem', lineHeight: 1, opacity: 0.8 }}>📈</div>
+                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <span className="share-card-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#5a6875', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Ingresos</span>
+                                <span className="share-card-value" style={{ fontSize: isMobile ? '1.5rem' : '1.5rem', fontWeight: 700, color: '#27AE60', lineHeight: 1.1 }}>€{formatCurrency(totalIncome)}</span>
                             </div>
                         </div>
-                        <div className="share-card expense" style={{ background: 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', borderRadius: '12px', padding: isMobile ? '20px' : '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', border: '2px solid #fca5a5', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
-                            <div className="share-card-icon" style={{ fontSize: isMobile ? '2.5rem' : '3rem', lineHeight: 1 }}>📉</div>
-                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                                <span className="share-card-label" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gastos</span>
-                                <span className="share-card-value" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', fontWeight: 800, color: '#1f2937', lineHeight: 1 }}>€{formatCurrency(totalExpense)}</span>
+                        <div className="share-card expense" style={{
+                            background: '#ffffff',
+                            borderRadius: '10px',
+                            padding: isMobile ? '16px' : '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                            border: '2px solid rgba(239, 68, 68, 0.2)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: '#C0392B', borderRadius: '10px 10px 0 0' }}></div>
+                            <div className="share-card-icon" style={{ fontSize: isMobile ? '1.5rem' : '1.5rem', lineHeight: 1, opacity: 0.8 }}>📉</div>
+                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <span className="share-card-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#5a6875', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Gastos</span>
+                                <span className="share-card-value" style={{ fontSize: isMobile ? '1.5rem' : '1.5rem', fontWeight: 700, color: '#C0392B', lineHeight: 1.1 }}>€{formatCurrency(totalExpense)}</span>
                             </div>
                         </div>
-                        <div className={`share-card balance ${balance >= 0 ? 'positive' : 'negative'}`} style={{ background: balance >= 0 ? 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' : 'linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)', borderRadius: '12px', padding: isMobile ? '20px' : '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', border: balance >= 0 ? '2px solid #86efac' : '2px solid #fca5a5', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)' }}>
-                            <div className="share-card-icon" style={{ fontSize: isMobile ? '2.5rem' : '3rem', lineHeight: 1 }}>{balance >= 0 ? '💰' : '⚠️'}</div>
-                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center' }}>
-                                <span className="share-card-label" style={{ fontSize: '0.875rem', fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Balance</span>
-                                <span className="share-card-value" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', fontWeight: 800, color: '#1f2937', lineHeight: 1 }}>€{formatCurrency(balance)}</span>
+                        <div className={`share-card balance ${balance >= 0 ? 'positive' : 'negative'}`} style={{
+                            background: '#ffffff',
+                            borderRadius: '10px',
+                            padding: isMobile ? '16px' : '20px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                            border: balance >= 0 ? '2px solid rgba(34, 197, 94, 0.2)' : '2px solid rgba(239, 68, 68, 0.2)',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: balance >= 0 ? '#27AE60' : '#C0392B', borderRadius: '10px 10px 0 0' }}></div>
+                            <div className="share-card-icon" style={{ fontSize: isMobile ? '1.5rem' : '1.5rem', lineHeight: 1, opacity: 0.8 }}>{balance >= 0 ? '💰' : '⚠️'}</div>
+                            <div className="share-card-content" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <span className="share-card-label" style={{ fontSize: '0.75rem', fontWeight: 600, color: '#5a6875', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Balance</span>
+                                <span className="share-card-value" style={{ fontSize: isMobile ? '1.5rem' : '1.5rem', fontWeight: 700, color: balance >= 0 ? '#27AE60' : '#C0392B', lineHeight: 1.1 }}>€{formatCurrency(balance)}</span>
                             </div>
                         </div>
                     </div>
