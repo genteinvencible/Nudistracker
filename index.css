@@ -917,7 +917,13 @@ table.transactions-table tbody tr:hover {
 
 table.transactions-table tbody tr.ignored {
     background-color: #fafafa;
-    opacity: 0.6;
+    opacity: 0.5;
+}
+
+table.transactions-table tbody tr.ignored .inline-edit-input,
+table.transactions-table tbody tr.ignored .inline-edit-select {
+    text-decoration: line-through;
+    color: var(--color-text-secondary);
 }
 
 table.transactions-table tbody tr.ignored .description-text,
