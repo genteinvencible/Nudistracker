@@ -1697,6 +1697,35 @@ table.transactions-table td .table-input {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--color-text-primary);
+    transition: color 0.2s ease;
+}
+
+.category-name:hover {
+    color: var(--color-primary);
+}
+
+.category-name-edit {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex: 1;
+}
+
+.category-name-input {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 2px solid var(--color-primary);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: white;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.category-name-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
 }
 
 .edit-icon-container {

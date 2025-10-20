@@ -486,7 +486,12 @@ const App: React.FC = () => {
     const deleteCategory = (type: CategoryType, id: string) => {
         setCategories(prev => ({ ...prev, [type]: prev[type].filter(c => c.id !== id) }));
     };
-    
+
+    const renameCategory = (type: CategoryType, id: string, newName: string) => {
+        if (!newName.trim()) return;
+        setCategories(prev => ({ ...prev, [type]: prev[type].map(c => c.id === id ? { ...c, name: newName.trim() } : c) }));
+    };
+
     const addKeyword = (type: CategoryType, categoryId: string, keyword: string) => {
         if (!keyword.trim()) return;
         setCategories(prev => ({ ...prev, [type]: prev[type].map(c => c.id === categoryId ? { ...c, keywords: [...c.keywords, keyword.trim()] } : c) }));
@@ -590,11 +595,12 @@ const App: React.FC = () => {
                         numberFormat={numberFormat}
                     />
                 }
-                {tracker_view === 'categories' && 
-                    <CategoriesView 
+                {tracker_view === 'categories' &&
+                    <CategoriesView
                         categories={categories}
                         onAddCategory={addCategory}
                         onDeleteCategory={deleteCategory}
+                        onRenameCategory={renameCategory}
                         onAddKeyword={addKeyword}
                         onRemoveKeyword={removeKeyword}
                         editingCategory={editingCategory}
@@ -1248,13 +1254,14 @@ interface CategoriesViewProps {
     categories: Categories;
     onAddCategory: (type: CategoryType, name: string) => void;
     onDeleteCategory: (type: CategoryType, id: string) => void;
+    onRenameCategory: (type: CategoryType, id: string, newName: string) => void;
     onAddKeyword: (type: CategoryType, categoryId: string, keyword: string) => void;
     onRemoveKeyword: (type: CategoryType, categoryId: string, keyword: string) => void;
     editingCategory: string | null;
     setEditingCategory: (id: string | null) => void;
 }
 
-const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, onAddCategory, onDeleteCategory, onAddKeyword, onRemoveKeyword, editingCategory, setEditingCategory }) => {
+const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, onAddCategory, onDeleteCategory, onRenameCategory, onAddKeyword, onRemoveKeyword, editingCategory, setEditingCategory }) => {
     const [newCategoryName, setNewCategoryName] = useState('');
     const [activeType, setActiveType] = useState<CategoryType>('income');
 
@@ -1310,6 +1317,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, onAddCatego
                                         category={category}
                                         type="income"
                                         onDelete={onDeleteCategory}
+                                        onRename={onRenameCategory}
                                         onAddKeyword={onAddKeyword}
                                         onRemoveKeyword={onRemoveKeyword}
                                         isEditing={editingCategory === category.id}
@@ -1358,6 +1366,7 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, onAddCatego
                                         category={category}
                                         type="expense"
                                         onDelete={onDeleteCategory}
+                                        onRename={onRenameCategory}
                                         onAddKeyword={onAddKeyword}
                                         onRemoveKeyword={onRemoveKeyword}
                                         isEditing={editingCategory === category.id}
@@ -1377,14 +1386,17 @@ interface CategoryCardProps {
     category: Category;
     type: CategoryType;
     onDelete: (type: CategoryType, id: string) => void;
+    onRename: (type: CategoryType, id: string, newName: string) => void;
     onAddKeyword: (type: CategoryType, categoryId: string, keyword: string) => void;
     onRemoveKeyword: (type: CategoryType, categoryId: string, keyword: string) => void;
     isEditing: boolean;
     setIsEditing: (id: string | null) => void;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, onAddKeyword, onRemoveKeyword, isEditing, setIsEditing }) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, onRename, onAddKeyword, onRemoveKeyword, isEditing, setIsEditing }) => {
     const [newKeyword, setNewKeyword] = useState('');
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [editedName, setEditedName] = useState(category.name);
 
     const handleAddKeyword = () => {
         if (newKeyword.trim()) {
@@ -1393,17 +1405,67 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, o
         }
     };
 
+    const handleSaveName = () => {
+        if (editedName.trim() && editedName !== category.name) {
+            onRename(type, category.id, editedName);
+        }
+        setIsEditingName(false);
+    };
+
+    const handleCancelEdit = () => {
+        setEditedName(category.name);
+        setIsEditingName(false);
+    };
+
     return (
         <div className="category-card">
             <div className="category-card-header">
-                <h4 className="category-name">{category.name}</h4>
-                <button
-                    className="button-icon danger"
-                    onClick={() => onDelete(type, category.id)}
-                    title="Eliminar categoría"
-                >
-                    <DeleteIcon />
-                </button>
+                {isEditingName ? (
+                    <div className="category-name-edit">
+                        <input
+                            type="text"
+                            className="category-name-input"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    handleSaveName();
+                                } else if (e.key === 'Escape') {
+                                    handleCancelEdit();
+                                }
+                            }}
+                            autoFocus
+                        />
+                        <button
+                            className="button-icon success"
+                            onClick={handleSaveName}
+                            title="Guardar"
+                        >
+                            <AddIcon />
+                        </button>
+                        <button
+                            className="button-icon"
+                            onClick={handleCancelEdit}
+                            title="Cancelar"
+                        >
+                            <CancelIcon />
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        <h4 className="category-name" onClick={() => setIsEditingName(true)} style={{ cursor: 'pointer' }} title="Haz clic para editar">
+                            {category.name}
+                        </h4>
+                        <button
+                            className="button-icon danger"
+                            onClick={() => onDelete(type, category.id)}
+                            title="Eliminar categoría"
+                        >
+                            <DeleteIcon />
+                        </button>
+                    </>
+                )}
             </div>
             <div className="keywords-section">
                 <div className="keywords-header">
