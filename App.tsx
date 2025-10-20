@@ -791,24 +791,72 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
     const totalExpense = transactions.filter(t => !t.ignored && t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
     const balance = totalIncome - totalExpense;
 
+    const categoryBreakdown = transactions
+        .filter(t => !t.ignored && t.amount < 0 && t.category)
+        .reduce((acc, t) => {
+            const cat = t.category;
+            acc[cat] = (acc[cat] || 0) + Math.abs(t.amount);
+            return acc;
+        }, {} as Record<string, number>);
+
+    const categoryData = Object.entries(categoryBreakdown)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6);
+
+    const maxCategoryAmount = categoryData.length > 0 ? Math.max(...categoryData.map(([, amount]) => amount)) : 0;
+
     return (
         <div className="transactions-view">
             <div className="panel summary-panel">
                 <h2>Resumen Financiero</h2>
                 <div className="summary-cards">
                     <div className="summary-card income">
-                        <span className="summary-label">Ingresos</span>
-                        <span className="summary-value">€{totalIncome.toFixed(2)}</span>
+                        <div className="summary-icon">📈</div>
+                        <div className="summary-content">
+                            <span className="summary-label">Ingresos</span>
+                            <span className="summary-value">€{totalIncome.toFixed(2)}</span>
+                        </div>
                     </div>
                     <div className="summary-card expense">
-                        <span className="summary-label">Gastos</span>
-                        <span className="summary-value">€{totalExpense.toFixed(2)}</span>
+                        <div className="summary-icon">📉</div>
+                        <div className="summary-content">
+                            <span className="summary-label">Gastos</span>
+                            <span className="summary-value">€{totalExpense.toFixed(2)}</span>
+                        </div>
                     </div>
                     <div className={`summary-card balance ${balance >= 0 ? 'positive' : 'negative'}`}>
-                        <span className="summary-label">Balance</span>
-                        <span className="summary-value">€{balance.toFixed(2)}</span>
+                        <div className="summary-icon">{balance >= 0 ? '💰' : '⚠️'}</div>
+                        <div className="summary-content">
+                            <span className="summary-label">Balance</span>
+                            <span className="summary-value">€{balance.toFixed(2)}</span>
+                        </div>
                     </div>
                 </div>
+
+                {categoryData.length > 0 && (
+                    <div className="category-chart">
+                        <h3>Gastos por Categoría</h3>
+                        <div className="chart-bars">
+                            {categoryData.map(([category, amount]) => {
+                                const percentage = (amount / maxCategoryAmount) * 100;
+                                return (
+                                    <div key={category} className="chart-bar-item">
+                                        <div className="chart-bar-label">
+                                            <span className="chart-category-name">{category}</span>
+                                            <span className="chart-category-amount">€{amount.toFixed(2)}</span>
+                                        </div>
+                                        <div className="chart-bar-container">
+                                            <div
+                                                className="chart-bar-fill"
+                                                style={{ width: `${percentage}%` }}
+                                            ></div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className="panel transactions-panel">
