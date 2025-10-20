@@ -313,11 +313,20 @@ const App: React.FC = () => {
 
         try {
             const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data, { type: 'array', codepage: 65001, cellDates: true }); // Use UTF-8 codepage and parse dates
+            const workbook = XLSX.read(data, { type: 'array', codepage: 65001, cellDates: true });
             const sheetName = workbook.SheetNames[0];
+
+            if (!sheetName) {
+                throw new Error('El archivo no contiene ninguna hoja de datos');
+            }
+
             const worksheet = workbook.Sheets[sheetName];
             const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true, defval: null });
-            
+
+            if (!jsonData || jsonData.length === 0) {
+                throw new Error('El archivo está vacío');
+            }
+
             let headerRowIndex = -1;
             let headers: string[] = [];
             const commonHeaders = ['fecha', 'descripcion', 'concepto', 'importe', 'valor', 'cantidad'];
@@ -335,12 +344,18 @@ const App: React.FC = () => {
               headers = jsonData[0].map(h => String(h || ''));
             }
 
-            const dataRows = jsonData.slice(headerRowIndex + 1);
+            const dataRows = jsonData.slice(headerRowIndex + 1).filter(row =>
+                row && row.length > 0 && row.some(cell => cell !== null && cell !== undefined && cell !== '')
+            );
+
+            if (dataRows.length === 0) {
+                throw new Error('No se encontraron datos en el archivo');
+            }
 
             setFileHeaders(headers);
             setParsedData(dataRows);
             setFilePreview(dataRows.slice(0, 3));
-            
+
             const autoMapped = { date: '', description: '', amount: ''};
             headers.forEach(header => {
                 const h = header.toLowerCase();
@@ -349,42 +364,77 @@ const App: React.FC = () => {
                 if (!autoMapped.amount && (h.includes('importe') || h.includes('valor') || h.includes('cantidad'))) autoMapped.amount = header;
             });
             setMappedColumns(autoMapped);
-            
+
         } catch (error) {
-            console.error(error);
-            alert("Hubo un error al procesar el archivo. Asegúrate de que es un CSV o Excel válido.");
-        }
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
+            console.error('Error al procesar archivo:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            alert(`Hubo un error al procesar el archivo: ${errorMessage}\n\nAsegúrate de que es un archivo CSV o Excel válido con datos.`);
+
+            setFileHeaders([]);
+            setParsedData([]);
+            setFilePreview([]);
+            setMappedColumns({ date: '', description: '', amount: '' });
+        } finally {
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         }
     };
     
     const handleProcessMappedFile = () => {
-        const newTransactions = parsedData.map((row, index) => {
-            const date = parseDate(row[fileHeaders.indexOf(mappedColumns.date)]);
-            const description = String(row[fileHeaders.indexOf(mappedColumns.description)] || '');
-            const rawAmount = String(row[fileHeaders.indexOf(mappedColumns.amount)] || '0');
-            const amount = parseAmount(rawAmount, numberFormat);
-            
-            return {
-                id: `staged-${Date.now()}-${index}`,
-                date,
-                description,
-                amount,
-                category: '',
-                ignored: false,
-            };
-        }).filter(t => t.description && t.amount !== 0);
+        if (!mappedColumns.date || !mappedColumns.description || !mappedColumns.amount) {
+            alert('Por favor, mapea todas las columnas requeridas (fecha, descripción e importe)');
+            return;
+        }
 
-        const autoCategorized = newTransactions.map(t => {
-            const foundCategory = autoCategorizeTransaction(t.description, categories);
-            return { ...t, category: foundCategory || '' };
-        });
+        if (parsedData.length === 0) {
+            alert('No hay datos para procesar');
+            return;
+        }
 
-        setStagedTransactions(prev => [...prev, ...autoCategorized]);
-        setParsedData([]);
-        setFileHeaders([]);
-        setFilePreview([]);
+        try {
+            const newTransactions = parsedData.map((row, index) => {
+                const dateIndex = fileHeaders.indexOf(mappedColumns.date);
+                const descIndex = fileHeaders.indexOf(mappedColumns.description);
+                const amountIndex = fileHeaders.indexOf(mappedColumns.amount);
+
+                if (dateIndex === -1 || descIndex === -1 || amountIndex === -1) {
+                    throw new Error('Columnas mapeadas no encontradas en el archivo');
+                }
+
+                const date = parseDate(row[dateIndex]);
+                const description = String(row[descIndex] || '');
+                const rawAmount = String(row[amountIndex] || '0');
+                const amount = parseAmount(rawAmount, numberFormat);
+
+                return {
+                    id: `staged-${Date.now()}-${index}`,
+                    date,
+                    description,
+                    amount,
+                    category: '',
+                    ignored: false,
+                };
+            }).filter(t => t.description && t.amount !== 0);
+
+            if (newTransactions.length === 0) {
+                alert('No se encontraron transacciones válidas en el archivo');
+                return;
+            }
+
+            const autoCategorized = newTransactions.map(t => {
+                const foundCategory = autoCategorizeTransaction(t.description, categories);
+                return { ...t, category: foundCategory || '' };
+            });
+
+            setStagedTransactions(prev => [...prev, ...autoCategorized]);
+            setParsedData([]);
+            setFileHeaders([]);
+            setFilePreview([]);
+        } catch (error) {
+            console.error('Error al procesar transacciones:', error);
+            alert('Hubo un error al procesar las transacciones. Por favor, verifica el mapeo de columnas.');
+        }
     };
     
     const handleFinalizeStaging = () => {
