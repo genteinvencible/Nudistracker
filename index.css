@@ -997,8 +997,66 @@ table.transactions-table tbody tr.ignored .date-badge {
     justify-content: center;
 }
 
+/* --- INLINE EDITABLE INPUTS --- */
+.inline-edit-input,
+.inline-edit-select {
+    width: 100%;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+    transition: all 0.2s ease;
+}
 
-/* --- INLINE TABLE INPUTS --- */
+.inline-edit-input:hover,
+.inline-edit-select:hover {
+    background-color: #f9fafb;
+    border-color: var(--color-border);
+}
+
+.inline-edit-input:focus,
+.inline-edit-select:focus {
+    outline: none;
+    background-color: white;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+}
+
+.inline-edit-input.date-input {
+    cursor: pointer;
+}
+
+.inline-edit-input.amount-input {
+    font-weight: 600;
+    text-align: right;
+}
+
+.inline-edit-input.amount-input.positive {
+    color: var(--color-income);
+}
+
+.inline-edit-input.amount-input.negative {
+    color: var(--color-expense);
+}
+
+.inline-edit-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.25rem;
+}
+
+.inline-edit-select:hover {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+}
+
+
+/* --- INLINE TABLE INPUTS (OLD) --- */
 .table-input {
     width: 100%;
     background-color: transparent;
@@ -1011,7 +1069,7 @@ table.transactions-table tbody tr.ignored .date-badge {
     transition: all 0.2s ease;
 }
 table.transactions-table td .table-input {
-    padding: 0; /* Override default input padding */
+    padding: 0;
 }
 
 
@@ -1695,6 +1753,42 @@ table.transactions-table td .table-input {
 
     .filter-group {
         min-width: 100%;
+    }
+
+    /* Inline editable inputs mobile */
+    .inline-edit-input,
+    .inline-edit-select {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+
+    .inline-edit-select {
+        background-position: right 0.5rem center;
+        padding-right: 2rem;
+    }
+
+    .transactions-table {
+        font-size: 0.85rem;
+    }
+
+    .th-date,
+    .td-date {
+        width: 100px;
+    }
+
+    .th-amount,
+    .td-amount {
+        width: 100px;
+    }
+
+    .th-category,
+    .td-category {
+        width: 130px;
+    }
+
+    .th-actions,
+    .td-actions {
+        width: 60px;
     }
 
     .categories-grid {

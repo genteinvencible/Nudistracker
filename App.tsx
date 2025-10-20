@@ -905,76 +905,60 @@ interface TransactionRowProps {
 }
 
 const TransactionRow: React.FC<TransactionRowProps> = ({ transaction, onUpdate, allCategories }) => {
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedTransaction, setEditedTransaction] = useState(transaction);
-
-    const handleSave = () => {
-        onUpdate(transaction.id, editedTransaction);
-        setIsEditing(false);
+    const handleDateChange = (value: string) => {
+        const date = new Date(value);
+        const formattedDate = date.toLocaleDateString('es-ES');
+        onUpdate(transaction.id, { date: formattedDate });
     };
 
-    const handleCancel = () => {
-        setEditedTransaction(transaction);
-        setIsEditing(false);
-    };
-
-    if (isEditing) {
-        return (
-            <tr className="editing">
-                <td>
-                    <input type="date" value={formatDateForInput(new Date(editedTransaction.date.split('/').reverse().join('-')))} onChange={e => setEditedTransaction(prev => ({ ...prev, date: new Date(e.target.value).toLocaleDateString('es-ES') }))} />
-                </td>
-                <td>
-                    <input type="text" value={editedTransaction.description} onChange={e => setEditedTransaction(prev => ({ ...prev, description: e.target.value }))} />
-                </td>
-                <td>
-                    <input type="number" value={editedTransaction.amount} onChange={e => setEditedTransaction(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} />
-                </td>
-                <td>
-                    <select value={editedTransaction.category} onChange={e => setEditedTransaction(prev => ({ ...prev, category: e.target.value }))}>
-                        <option value="">Sin categoría</option>
-                        {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                    </select>
-                </td>
-                <td>
-                    <button className="button-icon success" onClick={handleSave}><SaveIcon /></button>
-                    <button className="button-icon" onClick={handleCancel}><CancelIcon /></button>
-                </td>
-            </tr>
-        );
-    }
+    const dateValue = transaction.date.split('/').reverse().join('-');
 
     return (
         <tr className={transaction.ignored ? 'ignored' : ''}>
             <td className="td-date">
-                <span className="date-badge">{transaction.date}</span>
+                <input
+                    type="date"
+                    className="inline-edit-input date-input"
+                    value={dateValue}
+                    onChange={e => handleDateChange(e.target.value)}
+                />
             </td>
             <td className="td-description">
-                <span className="description-text">{transaction.description}</span>
+                <input
+                    type="text"
+                    className="inline-edit-input"
+                    value={transaction.description}
+                    onChange={e => onUpdate(transaction.id, { description: e.target.value })}
+                    placeholder="Descripción"
+                />
             </td>
             <td className="td-amount">
-                <span className={`amount-value ${transaction.amount >= 0 ? 'positive' : 'negative'}`}>
-                    {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
-                </span>
+                <input
+                    type="number"
+                    className={`inline-edit-input amount-input ${transaction.amount >= 0 ? 'positive' : 'negative'}`}
+                    value={transaction.amount}
+                    onChange={e => onUpdate(transaction.id, { amount: parseFloat(e.target.value) || 0 })}
+                    step="0.01"
+                />
             </td>
             <td className="td-category">
-                <span className={transaction.category ? 'category-badge' : 'no-category'}>
-                    {transaction.category || 'Sin categoría'}
-                </span>
+                <select
+                    className="inline-edit-select"
+                    value={transaction.category}
+                    onChange={e => onUpdate(transaction.id, { category: e.target.value })}
+                >
+                    <option value="">Sin categoría</option>
+                    {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
             </td>
             <td className="td-actions">
-                <div className="action-buttons">
-                    <button className="button-icon" onClick={() => setIsEditing(true)} title="Editar">
-                        <EditIcon />
-                    </button>
-                    <button
-                        className="button-icon"
-                        onClick={() => onUpdate(transaction.id, { ignored: !transaction.ignored })}
-                        title={transaction.ignored ? 'Restaurar' : 'Ignorar'}
-                    >
-                        {transaction.ignored ? <RestoreIcon /> : <IgnoreIcon />}
-                    </button>
-                </div>
+                <button
+                    className="button-icon"
+                    onClick={() => onUpdate(transaction.id, { ignored: !transaction.ignored })}
+                    title={transaction.ignored ? 'Restaurar' : 'Ignorar'}
+                >
+                    {transaction.ignored ? <RestoreIcon /> : <IgnoreIcon />}
+                </button>
             </td>
         </tr>
     );
