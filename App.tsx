@@ -701,14 +701,14 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
             {hasStagedTransactions && (
                 <div className="panel staged-transactions-panel">
                     <div className="staged-header">
-                        <div>
-                            <h3>Transacciones Importadas</h3>
-                        </div>
-                        <button className="button" onClick={onFinalize}>
-                            Añadir {stagedTransactions.length} sin revisar
-                        </button>
+                        <h3>Transacciones Importadas</h3>
                     </div>
                     <p className="staged-hint">Revisa y ajusta las transacciones antes de añadirlas a tu registro</p>
+                    <div className="staged-quick-actions">
+                        <button className="button primary" onClick={onFinalize}>
+                            Añadir {stagedTransactions.length} transacciones sin revisar
+                        </button>
+                    </div>
                     <div className="staged-table-container">
                         <table className="staged-table">
                             <thead>
