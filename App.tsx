@@ -1512,34 +1512,113 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, o
 const HowItWorksView: React.FC = () => {
     return (
         <div className="how-it-works-view">
-            <div className="panel">
+            <div className="panel how-it-works-header">
                 <h2>Cómo funciona Nudistracker</h2>
-                <div className="instructions-detailed">
-                    <section>
-                        <h3>1. Importa tus movimientos</h3>
-                        <p>Descarga tu extracto bancario en formato CSV o Excel y súbelo a Nudistracker. La aplicación detectará automáticamente las columnas importantes.</p>
-                    </section>
-                    <section>
-                        <h3>2. Crea categorías personalizadas</h3>
-                        <p>Define categorías que representen tus fuentes de ingresos y tipos de gastos. Añade palabras clave para que la aplicación categorice automáticamente tus movimientos.</p>
-                    </section>
-                    <section>
-                        <h3>3. Visualiza y analiza</h3>
-                        <p>Revisa tu resumen financiero, filtra por categorías y períodos, y comprende a dónde va tu dinero.</p>
-                    </section>
-                    <section>
-                        <h3>Consejos para mejores resultados</h3>
-                        <ul>
-                            <li>Usa palabras clave específicas en tus categorías para mejorar la precisión de la categorización automática.</li>
-                            <li>Revisa regularmente las transacciones sin categoría y ajústalas manualmente.</li>
-                            <li>Exporta tus datos periódicamente como respaldo.</li>
-                        </ul>
-                    </section>
+                <p className="subtitle">Gestiona tus finanzas en 3 pasos simples</p>
+            </div>
+
+            <div className="steps-grid">
+                <div className="step-card">
+                    <div className="step-number">1</div>
+                    <div className="step-icon">📁</div>
+                    <h3>Importa tus movimientos</h3>
+                    <p>Descarga tu extracto bancario en formato CSV o Excel desde tu banco y súbelo a Nudistracker.</p>
+                    <div className="step-details">
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Detección automática de columnas</span>
+                        </div>
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Soporta formatos EUR y USA</span>
+                        </div>
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Vista previa antes de importar</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="step-card">
+                    <div className="step-number">2</div>
+                    <div className="step-icon">🏷️</div>
+                    <h3>Crea tus categorías</h3>
+                    <p>Define categorías personalizadas para tus ingresos y gastos, y añade palabras clave.</p>
+                    <div className="step-details">
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Categorías ilimitadas</span>
+                        </div>
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Auto-categorización inteligente</span>
+                        </div>
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Personaliza con palabras clave</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="step-card">
+                    <div className="step-number">3</div>
+                    <div className="step-icon">📊</div>
+                    <h3>Visualiza y analiza</h3>
+                    <p>Comprende a dónde va tu dinero con gráficos claros y resúmenes detallados.</p>
+                    <div className="step-details">
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Gráficos interactivos</span>
+                        </div>
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Filtros por categoría y fecha</span>
+                        </div>
+                        <div className="detail-item">
+                            <CheckIcon />
+                            <span>Exporta y comparte resultados</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="panel tips-section">
+                <h3>💡 Consejos para mejores resultados</h3>
+                <div className="tips-grid">
+                    <div className="tip-card">
+                        <div className="tip-icon">🎯</div>
+                        <h4>Palabras clave específicas</h4>
+                        <p>Usa términos únicos que aparezcan en tus transacciones para mejorar la auto-categorización</p>
+                    </div>
+                    <div className="tip-card">
+                        <div className="tip-icon">🔍</div>
+                        <h4>Revisa regularmente</h4>
+                        <p>Comprueba las transacciones sin categoría y ajústalas manualmente para mayor precisión</p>
+                    </div>
+                    <div className="tip-card">
+                        <div className="tip-icon">💾</div>
+                        <h4>Exporta tus datos</h4>
+                        <p>Descarga resúmenes periódicamente como respaldo y para compartir con tu asesor financiero</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="panel privacy-section">
+                <div className="privacy-icon">🔒</div>
+                <div className="privacy-content">
+                    <h3>Tu privacidad es nuestra prioridad</h3>
+                    <p>Todos tus datos financieros se guardan únicamente en tu navegador. Nudistracker no envía ni almacena tu información en ningún servidor externo. Tú tienes el control total de tus datos.</p>
                 </div>
             </div>
         </div>
     );
 };
+
+const CheckIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+);
 
 // --- ICONS (SVG) ---
 const UploadIcon = () => (
