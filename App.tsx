@@ -675,7 +675,11 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                                                         const formattedValue = numberFormat === 'eur'
                                                             ? parsedValue.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
                                                             : parsedValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                                                        return <td key={j}>{formattedValue}</td>;
+                                                        return (
+                                                            <td key={j} title={`Original: ${rawValue} → Interpretado: ${parsedValue}`}>
+                                                                {rawValue} → {formattedValue}
+                                                            </td>
+                                                        );
                                                     }
 
                                                     return <td key={j}>{String(cell || '')}</td>;
