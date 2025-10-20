@@ -685,39 +685,50 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
 
             {hasStagedTransactions && (
                 <div className="panel staged-transactions-panel">
-                    <h3>Transacciones Importadas ({stagedTransactions.length})</h3>
-                    <p>Revisa y ajusta las transacciones antes de añadirlas a tu registro.</p>
-                    <div className="table-container">
+                    <div className="staged-header">
+                        <div>
+                            <h3>Transacciones Importadas</h3>
+                            <p className="staged-count">{stagedTransactions.length} transacciones pendientes de revisión</p>
+                        </div>
+                    </div>
+                    <div className="staged-table-container">
                         <table className="staged-table">
                             <thead>
                                 <tr>
-                                    <th>Fecha</th>
-                                    <th>Descripción</th>
-                                    <th>Importe</th>
-                                    <th>Categoría</th>
-                                    <th>Acciones</th>
+                                    <th className="date-col">Fecha</th>
+                                    <th className="description-col">Descripción</th>
+                                    <th className="amount-col">Importe</th>
+                                    <th className="category-col">Categoría</th>
+                                    <th className="actions-col">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {stagedTransactions.map(t => (
                                     <tr key={t.id}>
-                                        <td>{t.date}</td>
-                                        <td>
+                                        <td className="date-col">
+                                            <span className="date-badge">{t.date}</span>
+                                        </td>
+                                        <td className="description-col">
                                             <input
                                                 type="text"
+                                                className="staged-input"
                                                 value={t.description}
                                                 onChange={e => onUpdateStaged(t.id, { description: e.target.value })}
+                                                placeholder="Descripción"
                                             />
                                         </td>
-                                        <td>
+                                        <td className="amount-col">
                                             <input
                                                 type="number"
+                                                className={`staged-input amount-input ${t.amount >= 0 ? 'positive' : 'negative'}`}
                                                 value={t.amount}
                                                 onChange={e => onUpdateStaged(t.id, { amount: parseFloat(e.target.value) || 0 })}
+                                                step="0.01"
                                             />
                                         </td>
-                                        <td>
+                                        <td className="category-col">
                                             <select
+                                                className="staged-select"
                                                 value={t.category}
                                                 onChange={e => onUpdateStaged(t.id, { category: e.target.value })}
                                             >
@@ -725,8 +736,8 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                                                 {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                                             </select>
                                         </td>
-                                        <td>
-                                            <button className="button-icon danger" onClick={() => onDeleteStaged(t.id)}>
+                                        <td className="actions-col">
+                                            <button className="button-icon danger" onClick={() => onDeleteStaged(t.id)} title="Eliminar transacción">
                                                 <DeleteIcon />
                                             </button>
                                         </td>
@@ -735,9 +746,12 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                             </tbody>
                         </table>
                     </div>
-                    <button className="button primary" onClick={onFinalize}>
-                        Finalizar y Añadir Transacciones
-                    </button>
+                    <div className="staged-footer">
+                        <p className="staged-hint">Revisa y ajusta las transacciones antes de añadirlas a tu registro</p>
+                        <button className="button primary" onClick={onFinalize}>
+                            Finalizar y Añadir {stagedTransactions.length} Transacciones
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
