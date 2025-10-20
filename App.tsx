@@ -265,10 +265,23 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (appState === 'tracker') {
-            const dataToSave = JSON.stringify({ transactions, categories, numberFormat });
-            localStorage.setItem('finanzasNudistaSession', dataToSave);
+            try {
+                const dataToSave = JSON.stringify({ transactions, categories, numberFormat });
+                localStorage.setItem('finanzasNudistaSession', dataToSave);
+            } catch (error) {
+                console.error('Error guardando sesión:', error);
+            }
         }
     }, [transactions, categories, numberFormat, appState]);
+
+    // Reset import state when navigating away from import view or after finalizing
+    useEffect(() => {
+        if (tracker_view !== 'import') {
+            setFileHeaders([]);
+            setParsedData([]);
+            setFilePreview([]);
+        }
+    }, [tracker_view]);
 
     // --- HANDLERS: SESSION & NAVIGATION ---
     const hasSavedSession = (): boolean => !!localStorage.getItem('finanzasNudistaSession');
@@ -302,14 +315,26 @@ const App: React.FC = () => {
     };
 
     const handleGoToWelcome = () => {
-        setAppState('welcome');
-        setStagedTransactions([]);
+        const confirmLeave = window.confirm('¿Estás seguro de que quieres volver a la pantalla de inicio? Asegúrate de que tus datos estén guardados.');
+        if (confirmLeave) {
+            setAppState('welcome');
+            setStagedTransactions([]);
+            setFileHeaders([]);
+            setParsedData([]);
+            setFilePreview([]);
+            setMappedColumns({ date: '', description: '', amount: '' });
+        }
     };
     
     // --- HANDLERS: FILE IMPORT ---
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (!file) return;
+        if (!file) {
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
+            return;
+        }
 
         try {
             const data = await file.arrayBuffer();
@@ -438,8 +463,16 @@ const App: React.FC = () => {
     };
     
     const handleFinalizeStaging = () => {
+        if (stagedTransactions.length === 0) {
+            alert('No hay transacciones para finalizar');
+            return;
+        }
         setTransactions(prev => [...prev, ...stagedTransactions]);
         setStagedTransactions([]);
+        setFileHeaders([]);
+        setParsedData([]);
+        setFilePreview([]);
+        setMappedColumns({ date: '', description: '', amount: '' });
         setTrackerView('transactions');
     };
     
