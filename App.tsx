@@ -1005,43 +1005,70 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, onAddCatego
     return (
         <div className="categories-view">
             <div className="panel">
-                <h2>Gestionar Categorías</h2>
-                <p>Define categorías y palabras clave para organizar tus movimientos automáticamente.</p>
+                <div className="categories-header">
+                    <div>
+                        <h2>Gestionar Categorías</h2>
+                        <p className="categories-description">Define categorías y palabras clave para organizar tus movimientos automáticamente.</p>
+                    </div>
+                </div>
 
                 <div className="category-type-tabs">
-                    <button className={activeType === 'income' ? 'active' : ''} onClick={() => setActiveType('income')}>
+                    <button
+                        className={`category-tab ${activeType === 'income' ? 'active' : ''}`}
+                        onClick={() => setActiveType('income')}
+                    >
+                        <span className="tab-icon">↑</span>
                         Ingresos
+                        <span className="tab-count">{categories.income.length}</span>
                     </button>
-                    <button className={activeType === 'expense' ? 'active' : ''} onClick={() => setActiveType('expense')}>
+                    <button
+                        className={`category-tab ${activeType === 'expense' ? 'active' : ''}`}
+                        onClick={() => setActiveType('expense')}
+                    >
+                        <span className="tab-icon">↓</span>
                         Gastos
+                        <span className="tab-count">{categories.expense.length}</span>
                     </button>
                 </div>
 
-                <div className="add-category-form">
-                    <input
-                        type="text"
-                        placeholder="Nombre de la categoría"
-                        value={newCategoryName}
-                        onChange={e => setNewCategoryName(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
-                    />
-                    <button className="button primary" onClick={handleAddCategory}>Añadir</button>
+                <div className="add-category-section">
+                    <h3 className="section-title">Añadir nueva categoría</h3>
+                    <div className="add-category-form">
+                        <input
+                            type="text"
+                            className="category-input"
+                            placeholder={`Nueva categoría de ${activeType === 'income' ? 'ingreso' : 'gasto'}`}
+                            value={newCategoryName}
+                            onChange={e => setNewCategoryName(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+                        />
+                        <button className="button primary" onClick={handleAddCategory}>
+                            + Añadir Categoría
+                        </button>
+                    </div>
                 </div>
 
-                <div className="categories-list">
-                    {categories[activeType].map(category => (
-                        <CategoryCard
-                            key={category.id}
-                            category={category}
-                            type={activeType}
-                            onDelete={onDeleteCategory}
-                            onAddKeyword={onAddKeyword}
-                            onRemoveKeyword={onRemoveKeyword}
-                            isEditing={editingCategory === category.id}
-                            setIsEditing={setEditingCategory}
-                        />
-                    ))}
-                </div>
+                {categories[activeType].length === 0 ? (
+                    <div className="empty-state">
+                        <p>No hay categorías de {activeType === 'income' ? 'ingresos' : 'gastos'} todavía.</p>
+                        <p className="empty-hint">Crea tu primera categoría arriba para comenzar.</p>
+                    </div>
+                ) : (
+                    <div className="categories-list">
+                        {categories[activeType].map(category => (
+                            <CategoryCard
+                                key={category.id}
+                                category={category}
+                                type={activeType}
+                                onDelete={onDeleteCategory}
+                                onAddKeyword={onAddKeyword}
+                                onRemoveKeyword={onRemoveKeyword}
+                                isEditing={editingCategory === category.id}
+                                setIsEditing={setEditingCategory}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -1069,33 +1096,58 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, o
 
     return (
         <div className="category-card">
-            <div className="category-header">
-                <h4>{category.name}</h4>
-                <button className="button-icon danger" onClick={() => onDelete(type, category.id)}>
+            <div className="category-card-header">
+                <h4 className="category-name">{category.name}</h4>
+                <button
+                    className="button-icon danger"
+                    onClick={() => onDelete(type, category.id)}
+                    title="Eliminar categoría"
+                >
                     <DeleteIcon />
                 </button>
             </div>
             <div className="keywords-section">
-                <p className="keywords-label">Palabras clave:</p>
-                <div className="keywords-list">
-                    {category.keywords.map(keyword => (
-                        <span key={keyword} className="keyword-badge">
-                            {keyword}
-                            <button onClick={() => onRemoveKeyword(type, category.id, keyword)}>×</button>
-                        </span>
-                    ))}
+                <div className="keywords-header">
+                    <span className="keywords-label">Palabras clave</span>
+                    <span className="keywords-count">{category.keywords.length}</span>
                 </div>
+                {category.keywords.length > 0 ? (
+                    <div className="keywords-list">
+                        {category.keywords.map(keyword => (
+                            <span key={keyword} className="keyword-badge">
+                                {keyword}
+                                <button
+                                    className="keyword-remove"
+                                    onClick={() => onRemoveKeyword(type, category.id, keyword)}
+                                    title="Eliminar palabra clave"
+                                >
+                                    ×
+                                </button>
+                            </span>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="no-keywords">No hay palabras clave definidas</p>
+                )}
                 {isEditing ? (
                     <div className="add-keyword-form">
                         <input
                             type="text"
-                            placeholder="Nueva palabra clave"
+                            className="keyword-input"
+                            placeholder="Ej: nómina, salario, pago"
                             value={newKeyword}
                             onChange={e => setNewKeyword(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && handleAddKeyword()}
+                            autoFocus
                         />
-                        <button className="button-icon success" onClick={handleAddKeyword}><AddIcon /></button>
-                        <button className="button-icon" onClick={() => setIsEditing(null)}><CancelIcon /></button>
+                        <div className="keyword-form-actions">
+                            <button className="button-icon success" onClick={handleAddKeyword} title="Añadir">
+                                <AddIcon />
+                            </button>
+                            <button className="button-icon" onClick={() => setIsEditing(null)} title="Cancelar">
+                                <CancelIcon />
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <button className="button-add-keyword" onClick={() => setIsEditing(category.id)}>

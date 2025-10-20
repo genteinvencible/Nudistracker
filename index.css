@@ -930,49 +930,165 @@ table.transactions-table td .table-input {
     margin-top: 1rem;
 }
 
+/* --- CATEGORIES VIEW --- */
+.categories-view {
+    max-width: 1200px;
+}
+
+.categories-header {
+    margin-bottom: 2rem;
+}
+
+.categories-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.75rem;
+}
+
+.categories-description {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 1rem;
+}
+
+.category-type-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.category-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: none;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s ease;
+}
+
+.category-tab:hover {
+    color: var(--color-text-primary);
+    background-color: #f9fafb;
+}
+
+.category-tab.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+.tab-icon {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.5rem;
+    background-color: var(--color-border);
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.category-tab.active .tab-count {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.add-category-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+}
+
+.section-title {
+    margin: 0 0 1rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.add-category-form {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.category-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.category-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    border: 2px dashed var(--color-border);
+}
+
+.empty-state p {
+    margin: 0.5rem 0;
+    color: var(--color-text-secondary);
+}
+
+.empty-hint {
+    font-size: 0.9rem;
+}
+
+.categories-list {
+    display: grid;
+    gap: 1rem;
+}
+
 .category-card {
     border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
-    background-color: var(--color-surface);
-    transition: all 0.3s ease;
-    border-left: 4px solid transparent;
+    border-radius: 8px;
+    background-color: white;
+    transition: all 0.2s ease;
+    overflow: hidden;
 }
 
-.category-card.income {
-    border-left-color: var(--color-income);
+.category-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-.category-card.expense {
-    border-left-color: var(--color-expense);
-}
-
 
 .category-card-header {
-    padding: 1rem 1.5rem;
+    padding: 1.25rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    cursor: pointer;
-    border-radius: var(--border-radius);
-    transition: background-color 0.2s ease;
-}
-.category-card:hover .category-card-header {
-    background-color: #fafafa;
-}
-.category-card.editing .category-card-header {
-    background-color: #f5f5f5;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
+    background-color: white;
 }
 
-
-.category-card-header span {
+.category-name {
+    margin: 0;
+    font-size: 1.1rem;
     font-weight: 600;
-}
-.keyword-count {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    margin-left: 0.5rem;
+    color: var(--color-text-primary);
 }
 
 .edit-icon-container {
@@ -1019,41 +1135,142 @@ table.transactions-table td .table-input {
     margin-bottom: 1rem;
 }
 
-.add-keyword-form {
-    margin-bottom: 1rem;
+.keywords-section {
+    padding: 1rem 1.5rem 1.5rem;
+    background-color: #fafbfc;
+    border-top: 1px solid var(--color-border);
 }
 
-.keyword-pills {
+.keywords-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.keywords-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.keywords-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.4rem;
+    background-color: var(--color-primary);
+    color: white;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.keywords-list {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
-.keyword-pill {
+.no-keywords {
+    margin: 0 0 1rem 0;
+    padding: 1rem;
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    background-color: white;
+    border: 1px dashed var(--color-border);
+    border-radius: 6px;
+}
+
+.keyword-badge {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background-color: var(--color-background);
-    padding: 0.25rem 0.75rem;
-    border-radius: 99px;
-    font-size: 0.9rem;
+    background-color: white;
+    border: 1px solid var(--color-border);
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
 }
-.keyword-pill button {
+
+.keyword-badge:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.keyword-remove {
     background: none;
     border: none;
     cursor: pointer;
-    display: grid;
-    place-items: center;
     color: var(--color-text-secondary);
-    padding: 0.25rem;
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 50%;
-    transition: color 0.2s ease, background-color 0.2s ease;
+    transition: all 0.2s ease;
 }
 
-.keyword-pill button:hover {
-    color: var(--color-accent);
-    background-color: #fef2f2;
+.keyword-remove:hover {
+    color: white;
+    background-color: #ef4444;
+}
+
+.add-keyword-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.keyword-input {
+    flex: 1;
+    padding: 0.6rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.keyword-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+}
+
+.keyword-form-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.button-add-keyword {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: white;
+    border: 1px dashed var(--color-border);
+    border-radius: 6px;
+    color: var(--color-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.button-add-keyword:hover {
+    background-color: #fffbeb;
+    border-color: var(--color-primary);
+    border-style: solid;
 }
 
 .category-delete-btn {
