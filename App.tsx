@@ -75,18 +75,48 @@ const parseDate = (dateValue: any): string => {
 };
 
 const parseAmount = (numStr: string, format: NumberFormat): number => {
-    const cleanedStr = String(numStr || '0').replace(/[^\d.,-]/g, '').trim();
+    if (numStr === null || numStr === undefined) return 0;
+
+    const cleanedStr = String(numStr).replace(/[^\d.,-]/g, '').trim();
+
+    if (!cleanedStr || cleanedStr === '-') return 0;
+
     let parsableStr = cleanedStr;
 
     if (format === 'eur') {
-        // Format: 1.234,56 -> 1234.56
-        parsableStr = cleanedStr.replace(/\./g, '').replace(',', '.');
+        // European format: 1.234,56 or 1234,56 -> 1234.56
+        const hasDot = cleanedStr.includes('.');
+        const hasComma = cleanedStr.includes(',');
+
+        if (hasDot && hasComma) {
+            // Both present: dots are thousands, comma is decimal -> 1.234,56
+            parsableStr = cleanedStr.replace(/\./g, '').replace(/,/g, '.');
+        } else if (hasComma) {
+            // Only comma: it's the decimal separator -> 1234,56
+            parsableStr = cleanedStr.replace(/,/g, '.');
+        } else {
+            // Only dot or neither: treat as-is -> 1234.56 or 1234
+            parsableStr = cleanedStr;
+        }
     } else { // 'usa'
-        // Format: 1,234.56 -> 1234.56
-        parsableStr = cleanedStr.replace(/,/g, '');
+        // American format: 1,234.56 or 1234.56 -> 1234.56
+        const hasDot = cleanedStr.includes('.');
+        const hasComma = cleanedStr.includes(',');
+
+        if (hasDot && hasComma) {
+            // Both present: commas are thousands, dot is decimal -> 1,234.56
+            parsableStr = cleanedStr.replace(/,/g, '');
+        } else if (hasComma) {
+            // Only comma: remove it (thousand separator) -> 1,234
+            parsableStr = cleanedStr.replace(/,/g, '');
+        } else {
+            // Only dot or neither: treat as-is -> 1234.56 or 1234
+            parsableStr = cleanedStr;
+        }
     }
-    
-    return parseFloat(parsableStr) || 0;
+
+    const result = parseFloat(parsableStr);
+    return isNaN(result) ? 0 : result;
 };
 
 const getSortableTime = (dateString: string): number => {
