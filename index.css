@@ -2179,8 +2179,10 @@ table.transactions-table td .table-input {
     background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
     border: 2px solid #e5e7eb;
     border-radius: 12px;
-    max-height: 50vh;
+    max-height: 60vh;
     overflow-y: auto;
+    width: 800px;
+    max-width: 100%;
 }
 
 .share-header {
