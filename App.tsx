@@ -787,11 +787,8 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
         setShowAddForm(false);
     };
 
-    const activeTransactions = transactions.filter(t => !t.ignored);
-    const ignoredTransactions = transactions.filter(t => t.ignored);
-
-    const totalIncome = activeTransactions.filter(t => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
-    const totalExpense = activeTransactions.filter(t => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
+    const totalIncome = transactions.filter(t => !t.ignored && t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
+    const totalExpense = transactions.filter(t => !t.ignored && t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
     const balance = totalIncome - totalExpense;
 
     return (
@@ -814,12 +811,20 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
                 </div>
             </div>
 
-            <div className="panel">
+            <div className="panel transactions-panel">
                 <div className="panel-header">
-                    <h3>Tus Movimientos</h3>
+                    <div className="panel-header-main">
+                        <h3>Tus Movimientos</h3>
+                        <span className="transaction-count">{transactions.length} transacciones</span>
+                    </div>
                     <div className="header-actions">
-                        <button className="button" onClick={onAutoCategorize}>Auto-categorizar</button>
-                        <button className="button primary" onClick={() => setShowAddForm(true)}>Añadir Transacción</button>
+                        <button className="button secondary" onClick={onAutoCategorize}>
+                            <span className="button-icon-inline">✨</span>
+                            Auto-categorizar
+                        </button>
+                        <button className="button primary" onClick={() => setShowAddForm(true)}>
+                            + Añadir Transacción
+                        </button>
                     </div>
                 </div>
 
@@ -842,70 +847,51 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
                     </div>
                 )}
 
-                <div className="filters">
-                    <div className="filter-group">
-                        <label htmlFor="category-filter">Filtrar por categoría:</label>
-                        <select id="category-filter" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
-                            <option value="all">Todas</option>
-                            <option value="uncategorized">Sin categorizar</option>
-                            {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                        </select>
-                    </div>
-                    <div className="filter-group">
-                        <label htmlFor="start-date">Desde:</label>
-                        <input id="start-date" type="date" value={startDateFilter} onChange={e => setStartDateFilter(e.target.value)} />
-                    </div>
-                    <div className="filter-group">
-                        <label htmlFor="end-date">Hasta:</label>
-                        <input id="end-date" type="date" value={endDateFilter} onChange={e => setEndDateFilter(e.target.value)} />
+                <div className="filters-section">
+                    <div className="filters">
+                        <div className="filter-group">
+                            <label htmlFor="category-filter">Categoría</label>
+                            <select id="category-filter" className="filter-select" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+                                <option value="all">Todas</option>
+                                <option value="uncategorized">Sin categorizar</option>
+                                {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            </select>
+                        </div>
+                        <div className="filter-group">
+                            <label htmlFor="start-date">Desde</label>
+                            <input id="start-date" className="filter-input" type="date" value={startDateFilter} onChange={e => setStartDateFilter(e.target.value)} />
+                        </div>
+                        <div className="filter-group">
+                            <label htmlFor="end-date">Hasta</label>
+                            <input id="end-date" className="filter-input" type="date" value={endDateFilter} onChange={e => setEndDateFilter(e.target.value)} />
+                        </div>
                     </div>
                 </div>
 
-                {activeTransactions.length === 0 ? (
-                    <p>No hay transacciones que mostrar. Importa un archivo para comenzar.</p>
+                {transactions.length === 0 ? (
+                    <div className="empty-state">
+                        <p>No hay transacciones que mostrar.</p>
+                        <p className="empty-hint">Importa un archivo para comenzar.</p>
+                    </div>
                 ) : (
-                    <div className="table-container">
+                    <div className="transactions-table-container">
                         <table className="transactions-table">
                             <thead>
                                 <tr>
-                                    <th>Fecha</th>
-                                    <th>Descripción</th>
-                                    <th>Importe</th>
-                                    <th>Categoría</th>
-                                    <th>Acciones</th>
+                                    <th className="th-date">Fecha</th>
+                                    <th className="th-description">Descripción</th>
+                                    <th className="th-amount">Importe</th>
+                                    <th className="th-category">Categoría</th>
+                                    <th className="th-actions">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {activeTransactions.map(t => (
+                                {transactions.map(t => (
                                     <TransactionRow key={t.id} transaction={t} onUpdate={onUpdateTransaction} allCategories={allCategories} />
                                 ))}
                             </tbody>
                         </table>
                     </div>
-                )}
-
-                {ignoredTransactions.length > 0 && (
-                    <details className="ignored-section">
-                        <summary>Movimientos Ignorados ({ignoredTransactions.length})</summary>
-                        <div className="table-container">
-                            <table className="transactions-table">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Descripción</th>
-                                        <th>Importe</th>
-                                        <th>Categoría</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {ignoredTransactions.map(t => (
-                                        <TransactionRow key={t.id} transaction={t} onUpdate={onUpdateTransaction} allCategories={allCategories} />
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </details>
                 )}
             </div>
         </div>
@@ -960,21 +946,35 @@ const TransactionRow: React.FC<TransactionRowProps> = ({ transaction, onUpdate, 
 
     return (
         <tr className={transaction.ignored ? 'ignored' : ''}>
-            <td>{transaction.date}</td>
-            <td>{transaction.description}</td>
-            <td className={transaction.amount >= 0 ? 'positive' : 'negative'}>
-                €{transaction.amount.toFixed(2)}
+            <td className="td-date">
+                <span className="date-badge">{transaction.date}</span>
             </td>
-            <td>
+            <td className="td-description">
+                <span className="description-text">{transaction.description}</span>
+            </td>
+            <td className="td-amount">
+                <span className={`amount-value ${transaction.amount >= 0 ? 'positive' : 'negative'}`}>
+                    {transaction.amount >= 0 ? '+' : ''}€{transaction.amount.toFixed(2)}
+                </span>
+            </td>
+            <td className="td-category">
                 <span className={transaction.category ? 'category-badge' : 'no-category'}>
                     {transaction.category || 'Sin categoría'}
                 </span>
             </td>
-            <td>
-                <button className="button-icon" onClick={() => setIsEditing(true)}><EditIcon /></button>
-                <button className="button-icon" onClick={() => onUpdate(transaction.id, { ignored: !transaction.ignored })}>
-                    {transaction.ignored ? <RestoreIcon /> : <IgnoreIcon />}
-                </button>
+            <td className="td-actions">
+                <div className="action-buttons">
+                    <button className="button-icon" onClick={() => setIsEditing(true)} title="Editar">
+                        <EditIcon />
+                    </button>
+                    <button
+                        className="button-icon"
+                        onClick={() => onUpdate(transaction.id, { ignored: !transaction.ignored })}
+                        title={transaction.ignored ? 'Restaurar' : 'Ignorar'}
+                    >
+                        {transaction.ignored ? <RestoreIcon /> : <IgnoreIcon />}
+                    </button>
+                </div>
             </td>
         </tr>
     );

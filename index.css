@@ -790,12 +790,92 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     font-size: 0.9rem;
 }
 
-/* --- TABLES --- */
-.transactions-table-container, .staging-table-container {
-    overflow-x: auto;
-    max-height: 60vh;
+/* --- TRANSACTIONS PANEL --- */
+.transactions-panel .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.panel-header-main {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+}
+
+.panel-header-main h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.transaction-count {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    font-weight: normal;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.button-icon-inline {
+    margin-right: 0.25rem;
+}
+
+.filters-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: #f9fafb;
+    border-radius: 8px;
     border: 1px solid var(--color-border);
-    border-radius: var(--border-radius);
+}
+
+.filters {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 180px;
+}
+
+.filter-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.filter-select,
+.filter-input {
+    padding: 0.6rem 0.875rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 0.95rem;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+}
+
+/* --- TABLES --- */
+.transactions-table-container {
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background-color: white;
 }
 
 table.transactions-table {
@@ -803,36 +883,118 @@ table.transactions-table {
     border-collapse: collapse;
 }
 
-table.transactions-table th, table.transactions-table td {
-    padding: 0.9rem 1.2rem;
-    text-align: left;
-    border-bottom: 1px solid var(--color-border);
+table.transactions-table thead {
+    background-color: #f9fafb;
+    border-bottom: 2px solid var(--color-border);
 }
 
 table.transactions-table th {
-    background-color: var(--color-background);
+    padding: 1rem 1.25rem;
+    text-align: left;
     font-weight: 600;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     position: sticky;
     top: 0;
+    background-color: #f9fafb;
+    z-index: 10;
+}
+
+table.transactions-table td {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
 }
 
 table.transactions-table tbody tr:last-child td {
     border-bottom: none;
 }
+
 table.transactions-table tbody tr:hover {
     background-color: #f9fafb;
 }
 
-table.transactions-table .income { color: var(--color-income); }
-table.transactions-table .expense { color: var(--color-expense); }
-
-table.transactions-table .ignored {
-    background-color: #f8f8f8;
-    color: #aaa;
+table.transactions-table tbody tr.ignored {
+    background-color: #fafafa;
+    opacity: 0.6;
 }
 
-table.transactions-table .ignored td:not(:last-child) {
+table.transactions-table tbody tr.ignored .description-text,
+table.transactions-table tbody tr.ignored .date-badge {
     text-decoration: line-through;
+}
+
+.th-date,
+.td-date {
+    width: 120px;
+}
+
+.th-description,
+.td-description {
+    min-width: 250px;
+}
+
+.th-amount,
+.td-amount {
+    width: 140px;
+}
+
+.th-category,
+.td-category {
+    width: 180px;
+}
+
+.th-actions,
+.td-actions {
+    width: 100px;
+    text-align: center;
+}
+
+.description-text {
+    display: block;
+    font-size: 0.95rem;
+    color: var(--color-text-primary);
+}
+
+.amount-value {
+    display: inline-block;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.amount-value.positive {
+    color: var(--color-income);
+}
+
+.amount-value.negative {
+    color: var(--color-expense);
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background-color: #f3f4f6;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.no-category {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background-color: #fef3c7;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #92400e;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+    justify-content: center;
 }
 
 
