@@ -1410,7 +1410,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, o
                     <span className="keywords-label">Palabras clave</span>
                     <span className="keywords-count">{category.keywords.length}</span>
                 </div>
-                {category.keywords.length > 0 ? (
+                {category.keywords.length > 0 && (
                     <div className="keywords-list">
                         {category.keywords.map(keyword => (
                             <span key={keyword} className="keyword-badge">
@@ -1425,34 +1425,22 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, o
                             </span>
                         ))}
                     </div>
-                ) : (
-                    <p className="no-keywords">No hay palabras clave definidas</p>
                 )}
-                {isEditing ? (
-                    <div className="add-keyword-form">
-                        <input
-                            type="text"
-                            className="keyword-input"
-                            placeholder="Ej: nómina, salario, pago"
-                            value={newKeyword}
-                            onChange={e => setNewKeyword(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && handleAddKeyword()}
-                            autoFocus
-                        />
-                        <div className="keyword-form-actions">
-                            <button className="button-icon success" onClick={handleAddKeyword} title="Añadir">
-                                <AddIcon />
-                            </button>
-                            <button className="button-icon" onClick={() => setIsEditing(null)} title="Cancelar">
-                                <CancelIcon />
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <button className="button-add-keyword" onClick={() => setIsEditing(category.id)}>
-                        + Añadir palabra clave
-                    </button>
-                )}
+                <div className="add-keyword-form">
+                    <input
+                        type="text"
+                        className="keyword-input"
+                        placeholder="Escribe una palabra clave y pulsa Enter"
+                        value={newKeyword}
+                        onChange={e => setNewKeyword(e.target.value)}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddKeyword();
+                            }
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );

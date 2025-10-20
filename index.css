@@ -1842,19 +1842,25 @@ table.transactions-table td .table-input {
 }
 
 .keyword-input {
-    flex: 1;
-    padding: 0.6rem 0.875rem;
+    width: 100%;
+    padding: 0.75rem 0.875rem;
     border: 1px solid var(--color-border);
     border-radius: 6px;
     font-size: 0.9rem;
-    background-color: white;
+    background-color: #fafafa;
     transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.keyword-input::placeholder {
+    color: #9ca3af;
 }
 
 .keyword-input:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.1);
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
 }
 
 .keyword-form-actions {
