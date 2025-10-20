@@ -786,12 +786,12 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .staged-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 1.5rem;
 }
 
 .staged-header h3 {
-    margin: 0 0 0.5rem 0;
+    margin: 0;
     font-size: 1.5rem;
     color: var(--color-text-primary);
 }
