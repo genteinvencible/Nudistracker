@@ -33,6 +33,15 @@ type TrackerView = 'import' | 'transactions' | 'categories' | 'how-it-works';
 type CategoryType = 'income' | 'expense';
 
 // --- HELPER FUNCTIONS ---
+const formatCurrency = (amount: number, format: NumberFormat): string => {
+    const absAmount = Math.abs(amount);
+    if (format === 'eur') {
+        return absAmount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else {
+        return absAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+};
+
 const normalizeString = (str: string): string => {
     if (!str) return '';
     return str
@@ -231,10 +240,10 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (appState === 'tracker') {
-            const dataToSave = JSON.stringify({ transactions, categories });
+            const dataToSave = JSON.stringify({ transactions, categories, numberFormat });
             localStorage.setItem('finanzasNudistaSession', dataToSave);
         }
-    }, [transactions, categories, appState]);
+    }, [transactions, categories, numberFormat, appState]);
 
     // --- HANDLERS: SESSION & NAVIGATION ---
     const hasSavedSession = (): boolean => !!localStorage.getItem('finanzasNudistaSession');
@@ -250,12 +259,13 @@ const App: React.FC = () => {
     const handleContinueSession = () => {
         const savedData = localStorage.getItem('finanzasNudistaSession');
         if (savedData) {
-            const { transactions, categories } = JSON.parse(savedData);
+            const { transactions, categories, numberFormat: savedFormat } = JSON.parse(savedData);
             // FIX: Ensure all transactions have an 'ignored' property and that 'amount' is a number for backwards compatibility.
             // This prevents type errors in calculations when data is loaded from localStorage.
             const hydratedTransactions = (transactions || []).map((t: any) => ({ ...t, amount: Number(t.amount) || 0, ignored: t.ignored || false }));
             setTransactions(hydratedTransactions);
             setCategories(categories || { income: [], expense: [] });
+            setNumberFormat(savedFormat || 'eur');
         }
         setAppState('tracker');
         setTrackerView('transactions');
@@ -456,9 +466,9 @@ const App: React.FC = () => {
                         allCategories={allCategories.map(c => c.name)}
                     />
                 }
-                {tracker_view === 'transactions' && 
-                    <TransactionsView 
-                        transactions={filteredTransactions} 
+                {tracker_view === 'transactions' &&
+                    <TransactionsView
+                        transactions={filteredTransactions}
                         onUpdateTransaction={updateTransaction}
                         onAddTransaction={addTransaction}
                         onAutoCategorize={handleAutoCategorize}
@@ -469,6 +479,7 @@ const App: React.FC = () => {
                         setStartDateFilter={setStartDateFilter}
                         endDateFilter={endDateFilter}
                         setEndDateFilter={setEndDateFilter}
+                        numberFormat={numberFormat}
                     />
                 }
                 {tracker_view === 'categories' && 
@@ -771,9 +782,10 @@ interface TransactionsViewProps {
     setStartDateFilter: (value: string) => void;
     endDateFilter: string;
     setEndDateFilter: (value: string) => void;
+    numberFormat: NumberFormat;
 }
 
-const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpdateTransaction, onAddTransaction, onAutoCategorize, allCategories, categoryFilter, setCategoryFilter, startDateFilter, setStartDateFilter, endDateFilter, setEndDateFilter }) => {
+const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpdateTransaction, onAddTransaction, onAutoCategorize, allCategories, categoryFilter, setCategoryFilter, startDateFilter, setStartDateFilter, endDateFilter, setEndDateFilter, numberFormat }) => {
     const [showAddForm, setShowAddForm] = useState(false);
     const [newTransactionData, setNewTransactionData] = useState({ date: '', description: '', amount: 0, category: '' });
 
@@ -814,21 +826,21 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
                         <div className="summary-icon">📈</div>
                         <div className="summary-content">
                             <span className="summary-label">Ingresos</span>
-                            <span className="summary-value">€{totalIncome.toFixed(2)}</span>
+                            <span className="summary-value">€{formatCurrency(totalIncome, numberFormat)}</span>
                         </div>
                     </div>
                     <div className="summary-card expense">
                         <div className="summary-icon">📉</div>
                         <div className="summary-content">
                             <span className="summary-label">Gastos</span>
-                            <span className="summary-value">€{totalExpense.toFixed(2)}</span>
+                            <span className="summary-value">€{formatCurrency(totalExpense, numberFormat)}</span>
                         </div>
                     </div>
                     <div className={`summary-card balance ${balance >= 0 ? 'positive' : 'negative'}`}>
                         <div className="summary-icon">{balance >= 0 ? '💰' : '⚠️'}</div>
                         <div className="summary-content">
                             <span className="summary-label">Balance</span>
-                            <span className="summary-value">€{balance.toFixed(2)}</span>
+                            <span className="summary-value">€{formatCurrency(balance, numberFormat)}</span>
                         </div>
                     </div>
                 </div>
@@ -843,7 +855,7 @@ const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpd
                                     <div key={category} className="chart-bar-item">
                                         <div className="chart-bar-label">
                                             <span className="chart-category-name">{category}</span>
-                                            <span className="chart-category-amount">€{amount.toFixed(2)}</span>
+                                            <span className="chart-category-amount">€{formatCurrency(amount, numberFormat)}</span>
                                         </div>
                                         <div className="chart-bar-container">
                                             <div
