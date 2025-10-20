@@ -1175,6 +1175,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     display: flex;
     gap: 0.75rem;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
 }
 
 .quick-filter-btn {
@@ -1188,6 +1189,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     cursor: pointer;
     transition: all 0.2s;
     font-family: inherit;
+    white-space: nowrap;
 }
 
 .quick-filter-btn:hover {
@@ -1199,6 +1201,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
     display: flex;
     gap: 1rem;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .action-btn {
@@ -1257,6 +1260,55 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .clear-filters-btn:hover {
     color: #991b1b;
+}
+
+@media (max-width: 768px) {
+    .movements-filters {
+        padding: 1.25rem;
+    }
+
+    .date-filters-row {
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .category-filter-group {
+        min-width: auto;
+    }
+
+    .date-inputs {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .quick-filters {
+        gap: 0.5rem;
+    }
+
+    .quick-filter-btn {
+        flex: 1;
+        min-width: calc(50% - 0.25rem);
+        padding: 0.625rem 0.75rem;
+        font-size: 0.85rem;
+        text-align: center;
+    }
+
+    .action-buttons-row {
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        min-width: 100%;
+        justify-content: center;
+        padding: 0.875rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .action-btn svg {
+        width: 18px;
+        height: 18px;
+    }
 }
 
 /* --- TABLES --- */
