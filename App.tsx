@@ -693,13 +693,24 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                                             <tr key={i}>
                                                 {row.map((cell, j) => {
                                                     const header = fileHeaders[j];
+                                                    const isDateColumn = mappedColumns.date && header === mappedColumns.date;
                                                     const isAmountColumn = mappedColumns.amount && header === mappedColumns.amount;
+
+                                                    if (isDateColumn) {
+                                                        const rawValue = String(cell || '');
+                                                        const parsedDate = parseDate(cell);
+                                                        return (
+                                                            <td key={j} title={`Original: ${rawValue} → Interpretado: ${parsedDate}`}>
+                                                                {rawValue} → {parsedDate}
+                                                            </td>
+                                                        );
+                                                    }
 
                                                     if (isAmountColumn) {
                                                         const rawValue = String(cell || '');
                                                         const parsedValue = parseAmount(rawValue, numberFormat);
                                                         const formattedValue = numberFormat === 'eur'
-                                                            ? parsedValue.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                                                            ? parsedValue.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigals: 2 })
                                                             : parsedValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                                         return (
                                                             <td key={j} title={`Original: ${rawValue} → Interpretado: ${parsedValue}`}>
