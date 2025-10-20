@@ -1004,71 +1004,107 @@ const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, onAddCatego
 
     return (
         <div className="categories-view">
-            <div className="panel">
-                <div className="categories-header">
-                    <div>
-                        <h2>Gestionar Categorías</h2>
-                        <p className="categories-description">Define categorías y palabras clave para organizar tus movimientos automáticamente.</p>
-                    </div>
-                </div>
+            <div className="panel categories-panel">
+                <h2>Gestionar Categorías</h2>
+                <p>Crea categorías para tus ingresos y gastos. Añade palabras clave para automatizar la clasificación al importar nuevos archivos.</p>
 
-                <div className="category-type-tabs">
-                    <button
-                        className={`category-tab ${activeType === 'income' ? 'active' : ''}`}
-                        onClick={() => setActiveType('income')}
-                    >
-                        <span className="tab-icon">↑</span>
-                        Ingresos
-                        <span className="tab-count">{categories.income.length}</span>
-                    </button>
-                    <button
-                        className={`category-tab ${activeType === 'expense' ? 'active' : ''}`}
-                        onClick={() => setActiveType('expense')}
-                    >
-                        <span className="tab-icon">↓</span>
-                        Gastos
-                        <span className="tab-count">{categories.expense.length}</span>
-                    </button>
-                </div>
-
-                <div className="add-category-section">
-                    <h3 className="section-title">Añadir nueva categoría</h3>
-                    <div className="add-category-form">
-                        <input
-                            type="text"
-                            className="category-input"
-                            placeholder={`Nueva categoría de ${activeType === 'income' ? 'ingreso' : 'gasto'}`}
-                            value={newCategoryName}
-                            onChange={e => setNewCategoryName(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
-                        />
-                        <button className="button primary" onClick={handleAddCategory}>
-                            + Añadir Categoría
-                        </button>
-                    </div>
-                </div>
-
-                {categories[activeType].length === 0 ? (
-                    <div className="empty-state">
-                        <p>No hay categorías de {activeType === 'income' ? 'ingresos' : 'gastos'} todavía.</p>
-                        <p className="empty-hint">Crea tu primera categoría arriba para comenzar.</p>
-                    </div>
-                ) : (
-                    <div className="categories-list">
-                        {categories[activeType].map(category => (
-                            <CategoryCard
-                                key={category.id}
-                                category={category}
-                                type={activeType}
-                                onDelete={onDeleteCategory}
-                                onAddKeyword={onAddKeyword}
-                                onRemoveKeyword={onRemoveKeyword}
-                                isEditing={editingCategory === category.id}
-                                setIsEditing={setEditingCategory}
+                <div className="categories-grid">
+                    <div className="category-column">
+                        <h3>Categorías de Ingresos</h3>
+                        <div className="add-category-form">
+                            <input
+                                type="text"
+                                placeholder="Añadir nueva categoría de ingreso..."
+                                value={activeType === 'income' ? newCategoryName : ''}
+                                onChange={e => {
+                                    setActiveType('income');
+                                    setNewCategoryName(e.target.value);
+                                }}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter' && activeType === 'income') {
+                                        handleAddCategory();
+                                    }
+                                }}
                             />
-                        ))}
+                            <button
+                                onClick={() => {
+                                    setActiveType('income');
+                                    handleAddCategory();
+                                }}
+                            >
+                                +
+                            </button>
+                        </div>
+                        {categories.income.length === 0 ? (
+                            <div className="empty-state">
+                                <p>No hay categorías. ¡Añade una para empezar!</p>
+                            </div>
+                        ) : (
+                            <div className="category-list">
+                                {categories.income.map(category => (
+                                    <CategoryCard
+                                        key={category.id}
+                                        category={category}
+                                        type="income"
+                                        onDelete={onDeleteCategory}
+                                        onAddKeyword={onAddKeyword}
+                                        onRemoveKeyword={onRemoveKeyword}
+                                        isEditing={editingCategory === category.id}
+                                        setIsEditing={setEditingCategory}
+                                    />
+                                ))}
+                            </div>
+                        )}
                     </div>
-                )}
+
+                    <div className="category-column">
+                        <h3>Categorías de Gastos</h3>
+                        <div className="add-category-form">
+                            <input
+                                type="text"
+                                placeholder="Añadir nueva categoría de gasto..."
+                                value={activeType === 'expense' ? newCategoryName : ''}
+                                onChange={e => {
+                                    setActiveType('expense');
+                                    setNewCategoryName(e.target.value);
+                                }}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter' && activeType === 'expense') {
+                                        handleAddCategory();
+                                    }
+                                }}
+                            />
+                            <button
+                                onClick={() => {
+                                    setActiveType('expense');
+                                    handleAddCategory();
+                                }}
+                            >
+                                +
+                            </button>
+                        </div>
+                        {categories.expense.length === 0 ? (
+                            <div className="empty-state">
+                                <p>No hay categorías. ¡Añade una para empezar!</p>
+                            </div>
+                        ) : (
+                            <div className="category-list">
+                                {categories.expense.map(category => (
+                                    <CategoryCard
+                                        key={category.id}
+                                        category={category}
+                                        type="expense"
+                                        onDelete={onDeleteCategory}
+                                        onAddKeyword={onAddKeyword}
+                                        onRemoveKeyword={onRemoveKeyword}
+                                        isEditing={editingCategory === category.id}
+                                        setIsEditing={setEditingCategory}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
