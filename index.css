@@ -60,6 +60,10 @@ body {
     text-align: left;
 }
 
+.instructions h4 {
+    margin-bottom: 1.5rem;
+}
+
 .instructions-list {
     list-style-position: inside;
     margin-bottom: 2rem;
