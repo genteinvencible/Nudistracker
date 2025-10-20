@@ -1160,7 +1160,8 @@ table.transactions-table tbody tr.ignored .date-badge {
 
 .th-amount,
 .td-amount {
-    width: 140px;
+    width: 160px;
+    min-width: 160px;
 }
 
 .th-category,
