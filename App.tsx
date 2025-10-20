@@ -314,10 +314,10 @@ const App: React.FC = () => {
 
         try {
             const data = await file.arrayBuffer();
-            const workbook = XLSX.read(data, { type: 'array', codepage: 65001 }); // Use UTF-8 codepage
+            const workbook = XLSX.read(data, { type: 'array', codepage: 65001, cellDates: true }); // Use UTF-8 codepage and parse dates
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
-            const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: false, defval: null });
+            const jsonData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true, defval: null });
             
             let headerRowIndex = -1;
             let headers: string[] = [];
