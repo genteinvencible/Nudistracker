@@ -598,4 +598,538 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                                 <span>1.234,56 (Punto para miles, coma para decimales)</span>
                             </label>
                             <label>
-                                <input type="radio" name="number-format" value="usa" checked={numberFormat === '
+                                <input type="radio" name="number-format" value="usa" checked={numberFormat === 'usa'} onChange={() => setNumberFormat('usa')} />
+                                <span>1,234.56 (Coma para miles, punto para decimales)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    {filePreview.length > 0 && (
+                        <div className="preview-section">
+                            <h4>Vista previa</h4>
+                            <div className="table-container">
+                                <table className="preview-table">
+                                    <thead>
+                                        <tr>
+                                            {fileHeaders.map((h, i) => <th key={i}>{h}</th>)}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filePreview.map((row, i) => (
+                                            <tr key={i}>
+                                                {row.map((cell, j) => <td key={j}>{String(cell || '')}</td>)}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+
+                    <button className="button primary" onClick={onProcessFile} disabled={!isMappingComplete}>
+                        Procesar Archivo
+                    </button>
+                </div>
+            )}
+
+            {hasStagedTransactions && (
+                <div className="panel staged-transactions-panel">
+                    <h3>Transacciones Importadas ({stagedTransactions.length})</h3>
+                    <p>Revisa y ajusta las transacciones antes de añadirlas a tu registro.</p>
+                    <div className="table-container">
+                        <table className="staged-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Importe</th>
+                                    <th>Categoría</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {stagedTransactions.map(t => (
+                                    <tr key={t.id}>
+                                        <td>{t.date}</td>
+                                        <td>
+                                            <input
+                                                type="text"
+                                                value={t.description}
+                                                onChange={e => onUpdateStaged(t.id, { description: e.target.value })}
+                                            />
+                                        </td>
+                                        <td>
+                                            <input
+                                                type="number"
+                                                value={t.amount}
+                                                onChange={e => onUpdateStaged(t.id, { amount: parseFloat(e.target.value) || 0 })}
+                                            />
+                                        </td>
+                                        <td>
+                                            <select
+                                                value={t.category}
+                                                onChange={e => onUpdateStaged(t.id, { category: e.target.value })}
+                                            >
+                                                <option value="">Sin categoría</option>
+                                                {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <button className="button-icon danger" onClick={() => onDeleteStaged(t.id)}>
+                                                <DeleteIcon />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button className="button primary" onClick={onFinalize}>
+                        Finalizar y Añadir Transacciones
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// --- Transactions View Component ---
+interface TransactionsViewProps {
+    transactions: Transaction[];
+    onUpdateTransaction: (id: string, newValues: Partial<Transaction>) => void;
+    onAddTransaction: (transactionData: Omit<Transaction, 'id' | 'ignored'>) => void;
+    onAutoCategorize: () => void;
+    allCategories: string[];
+    categoryFilter: string;
+    setCategoryFilter: (value: string) => void;
+    startDateFilter: string;
+    setStartDateFilter: (value: string) => void;
+    endDateFilter: string;
+    setEndDateFilter: (value: string) => void;
+}
+
+const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpdateTransaction, onAddTransaction, onAutoCategorize, allCategories, categoryFilter, setCategoryFilter, startDateFilter, setStartDateFilter, endDateFilter, setEndDateFilter }) => {
+    const [showAddForm, setShowAddForm] = useState(false);
+    const [newTransactionData, setNewTransactionData] = useState({ date: '', description: '', amount: 0, category: '' });
+
+    const handleAdd = () => {
+        if (!newTransactionData.date || !newTransactionData.description) {
+            alert('Por favor completa al menos la fecha y la descripción.');
+            return;
+        }
+        onAddTransaction(newTransactionData);
+        setNewTransactionData({ date: '', description: '', amount: 0, category: '' });
+        setShowAddForm(false);
+    };
+
+    const activeTransactions = transactions.filter(t => !t.ignored);
+    const ignoredTransactions = transactions.filter(t => t.ignored);
+
+    const totalIncome = activeTransactions.filter(t => t.amount > 0).reduce((acc, t) => acc + t.amount, 0);
+    const totalExpense = activeTransactions.filter(t => t.amount < 0).reduce((acc, t) => acc + Math.abs(t.amount), 0);
+    const balance = totalIncome - totalExpense;
+
+    return (
+        <div className="transactions-view">
+            <div className="panel summary-panel">
+                <h2>Resumen Financiero</h2>
+                <div className="summary-cards">
+                    <div className="summary-card income">
+                        <span className="summary-label">Ingresos</span>
+                        <span className="summary-value">€{totalIncome.toFixed(2)}</span>
+                    </div>
+                    <div className="summary-card expense">
+                        <span className="summary-label">Gastos</span>
+                        <span className="summary-value">€{totalExpense.toFixed(2)}</span>
+                    </div>
+                    <div className={`summary-card balance ${balance >= 0 ? 'positive' : 'negative'}`}>
+                        <span className="summary-label">Balance</span>
+                        <span className="summary-value">€{balance.toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="panel">
+                <div className="panel-header">
+                    <h3>Tus Movimientos</h3>
+                    <div className="header-actions">
+                        <button className="button" onClick={onAutoCategorize}>Auto-categorizar</button>
+                        <button className="button primary" onClick={() => setShowAddForm(true)}>Añadir Transacción</button>
+                    </div>
+                </div>
+
+                {showAddForm && (
+                    <div className="add-form">
+                        <h4>Nueva Transacción</h4>
+                        <div className="form-row">
+                            <input type="date" value={newTransactionData.date} onChange={e => setNewTransactionData(prev => ({ ...prev, date: e.target.value }))} />
+                            <input type="text" placeholder="Descripción" value={newTransactionData.description} onChange={e => setNewTransactionData(prev => ({ ...prev, description: e.target.value }))} />
+                            <input type="number" placeholder="Importe" value={newTransactionData.amount} onChange={e => setNewTransactionData(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} />
+                            <select value={newTransactionData.category} onChange={e => setNewTransactionData(prev => ({ ...prev, category: e.target.value }))}>
+                                <option value="">Sin categoría</option>
+                                {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                            </select>
+                        </div>
+                        <div className="form-actions">
+                            <button className="button primary" onClick={handleAdd}>Añadir</button>
+                            <button className="button" onClick={() => setShowAddForm(false)}>Cancelar</button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="filters">
+                    <div className="filter-group">
+                        <label htmlFor="category-filter">Filtrar por categoría:</label>
+                        <select id="category-filter" value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)}>
+                            <option value="all">Todas</option>
+                            <option value="uncategorized">Sin categorizar</option>
+                            {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                        </select>
+                    </div>
+                    <div className="filter-group">
+                        <label htmlFor="start-date">Desde:</label>
+                        <input id="start-date" type="date" value={startDateFilter} onChange={e => setStartDateFilter(e.target.value)} />
+                    </div>
+                    <div className="filter-group">
+                        <label htmlFor="end-date">Hasta:</label>
+                        <input id="end-date" type="date" value={endDateFilter} onChange={e => setEndDateFilter(e.target.value)} />
+                    </div>
+                </div>
+
+                {activeTransactions.length === 0 ? (
+                    <p>No hay transacciones que mostrar. Importa un archivo para comenzar.</p>
+                ) : (
+                    <div className="table-container">
+                        <table className="transactions-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Descripción</th>
+                                    <th>Importe</th>
+                                    <th>Categoría</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {activeTransactions.map(t => (
+                                    <TransactionRow key={t.id} transaction={t} onUpdate={onUpdateTransaction} allCategories={allCategories} />
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+
+                {ignoredTransactions.length > 0 && (
+                    <details className="ignored-section">
+                        <summary>Movimientos Ignorados ({ignoredTransactions.length})</summary>
+                        <div className="table-container">
+                            <table className="transactions-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Descripción</th>
+                                        <th>Importe</th>
+                                        <th>Categoría</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {ignoredTransactions.map(t => (
+                                        <TransactionRow key={t.id} transaction={t} onUpdate={onUpdateTransaction} allCategories={allCategories} />
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                )}
+            </div>
+        </div>
+    );
+};
+
+interface TransactionRowProps {
+    transaction: Transaction;
+    onUpdate: (id: string, newValues: Partial<Transaction>) => void;
+    allCategories: string[];
+}
+
+const TransactionRow: React.FC<TransactionRowProps> = ({ transaction, onUpdate, allCategories }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedTransaction, setEditedTransaction] = useState(transaction);
+
+    const handleSave = () => {
+        onUpdate(transaction.id, editedTransaction);
+        setIsEditing(false);
+    };
+
+    const handleCancel = () => {
+        setEditedTransaction(transaction);
+        setIsEditing(false);
+    };
+
+    if (isEditing) {
+        return (
+            <tr className="editing">
+                <td>
+                    <input type="date" value={formatDateForInput(new Date(editedTransaction.date.split('/').reverse().join('-')))} onChange={e => setEditedTransaction(prev => ({ ...prev, date: new Date(e.target.value).toLocaleDateString('es-ES') }))} />
+                </td>
+                <td>
+                    <input type="text" value={editedTransaction.description} onChange={e => setEditedTransaction(prev => ({ ...prev, description: e.target.value }))} />
+                </td>
+                <td>
+                    <input type="number" value={editedTransaction.amount} onChange={e => setEditedTransaction(prev => ({ ...prev, amount: parseFloat(e.target.value) || 0 }))} />
+                </td>
+                <td>
+                    <select value={editedTransaction.category} onChange={e => setEditedTransaction(prev => ({ ...prev, category: e.target.value }))}>
+                        <option value="">Sin categoría</option>
+                        {allCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                </td>
+                <td>
+                    <button className="button-icon success" onClick={handleSave}><SaveIcon /></button>
+                    <button className="button-icon" onClick={handleCancel}><CancelIcon /></button>
+                </td>
+            </tr>
+        );
+    }
+
+    return (
+        <tr className={transaction.ignored ? 'ignored' : ''}>
+            <td>{transaction.date}</td>
+            <td>{transaction.description}</td>
+            <td className={transaction.amount >= 0 ? 'positive' : 'negative'}>
+                €{transaction.amount.toFixed(2)}
+            </td>
+            <td>
+                <span className={transaction.category ? 'category-badge' : 'no-category'}>
+                    {transaction.category || 'Sin categoría'}
+                </span>
+            </td>
+            <td>
+                <button className="button-icon" onClick={() => setIsEditing(true)}><EditIcon /></button>
+                <button className="button-icon" onClick={() => onUpdate(transaction.id, { ignored: !transaction.ignored })}>
+                    {transaction.ignored ? <RestoreIcon /> : <IgnoreIcon />}
+                </button>
+            </td>
+        </tr>
+    );
+};
+
+// --- Categories View Component ---
+interface CategoriesViewProps {
+    categories: Categories;
+    onAddCategory: (type: CategoryType, name: string) => void;
+    onDeleteCategory: (type: CategoryType, id: string) => void;
+    onAddKeyword: (type: CategoryType, categoryId: string, keyword: string) => void;
+    onRemoveKeyword: (type: CategoryType, categoryId: string, keyword: string) => void;
+    editingCategory: string | null;
+    setEditingCategory: (id: string | null) => void;
+}
+
+const CategoriesView: React.FC<CategoriesViewProps> = ({ categories, onAddCategory, onDeleteCategory, onAddKeyword, onRemoveKeyword, editingCategory, setEditingCategory }) => {
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [activeType, setActiveType] = useState<CategoryType>('income');
+
+    const handleAddCategory = () => {
+        if (newCategoryName.trim()) {
+            onAddCategory(activeType, newCategoryName);
+            setNewCategoryName('');
+        }
+    };
+
+    return (
+        <div className="categories-view">
+            <div className="panel">
+                <h2>Gestionar Categorías</h2>
+                <p>Define categorías y palabras clave para organizar tus movimientos automáticamente.</p>
+
+                <div className="category-type-tabs">
+                    <button className={activeType === 'income' ? 'active' : ''} onClick={() => setActiveType('income')}>
+                        Ingresos
+                    </button>
+                    <button className={activeType === 'expense' ? 'active' : ''} onClick={() => setActiveType('expense')}>
+                        Gastos
+                    </button>
+                </div>
+
+                <div className="add-category-form">
+                    <input
+                        type="text"
+                        placeholder="Nombre de la categoría"
+                        value={newCategoryName}
+                        onChange={e => setNewCategoryName(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleAddCategory()}
+                    />
+                    <button className="button primary" onClick={handleAddCategory}>Añadir</button>
+                </div>
+
+                <div className="categories-list">
+                    {categories[activeType].map(category => (
+                        <CategoryCard
+                            key={category.id}
+                            category={category}
+                            type={activeType}
+                            onDelete={onDeleteCategory}
+                            onAddKeyword={onAddKeyword}
+                            onRemoveKeyword={onRemoveKeyword}
+                            isEditing={editingCategory === category.id}
+                            setIsEditing={setEditingCategory}
+                        />
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+interface CategoryCardProps {
+    category: Category;
+    type: CategoryType;
+    onDelete: (type: CategoryType, id: string) => void;
+    onAddKeyword: (type: CategoryType, categoryId: string, keyword: string) => void;
+    onRemoveKeyword: (type: CategoryType, categoryId: string, keyword: string) => void;
+    isEditing: boolean;
+    setIsEditing: (id: string | null) => void;
+}
+
+const CategoryCard: React.FC<CategoryCardProps> = ({ category, type, onDelete, onAddKeyword, onRemoveKeyword, isEditing, setIsEditing }) => {
+    const [newKeyword, setNewKeyword] = useState('');
+
+    const handleAddKeyword = () => {
+        if (newKeyword.trim()) {
+            onAddKeyword(type, category.id, newKeyword);
+            setNewKeyword('');
+        }
+    };
+
+    return (
+        <div className="category-card">
+            <div className="category-header">
+                <h4>{category.name}</h4>
+                <button className="button-icon danger" onClick={() => onDelete(type, category.id)}>
+                    <DeleteIcon />
+                </button>
+            </div>
+            <div className="keywords-section">
+                <p className="keywords-label">Palabras clave:</p>
+                <div className="keywords-list">
+                    {category.keywords.map(keyword => (
+                        <span key={keyword} className="keyword-badge">
+                            {keyword}
+                            <button onClick={() => onRemoveKeyword(type, category.id, keyword)}>×</button>
+                        </span>
+                    ))}
+                </div>
+                {isEditing ? (
+                    <div className="add-keyword-form">
+                        <input
+                            type="text"
+                            placeholder="Nueva palabra clave"
+                            value={newKeyword}
+                            onChange={e => setNewKeyword(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleAddKeyword()}
+                        />
+                        <button className="button-icon success" onClick={handleAddKeyword}><AddIcon /></button>
+                        <button className="button-icon" onClick={() => setIsEditing(null)}><CancelIcon /></button>
+                    </div>
+                ) : (
+                    <button className="button-add-keyword" onClick={() => setIsEditing(category.id)}>
+                        + Añadir palabra clave
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+};
+
+// --- How It Works View Component ---
+const HowItWorksView: React.FC = () => {
+    return (
+        <div className="how-it-works-view">
+            <div className="panel">
+                <h2>Cómo funciona Nudistracker</h2>
+                <div className="instructions-detailed">
+                    <section>
+                        <h3>1. Importa tus movimientos</h3>
+                        <p>Descarga tu extracto bancario en formato CSV o Excel y súbelo a Nudistracker. La aplicación detectará automáticamente las columnas importantes.</p>
+                    </section>
+                    <section>
+                        <h3>2. Crea categorías personalizadas</h3>
+                        <p>Define categorías que representen tus fuentes de ingresos y tipos de gastos. Añade palabras clave para que la aplicación categorice automáticamente tus movimientos.</p>
+                    </section>
+                    <section>
+                        <h3>3. Visualiza y analiza</h3>
+                        <p>Revisa tu resumen financiero, filtra por categorías y períodos, y comprende a dónde va tu dinero.</p>
+                    </section>
+                    <section>
+                        <h3>Consejos para mejores resultados</h3>
+                        <ul>
+                            <li>Usa palabras clave específicas en tus categorías para mejorar la precisión de la categorización automática.</li>
+                            <li>Revisa regularmente las transacciones sin categoría y ajústalas manualmente.</li>
+                            <li>Exporta tus datos periódicamente como respaldo.</li>
+                        </ul>
+                    </section>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- ICONS (SVG) ---
+const UploadIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+    </svg>
+);
+
+const EditIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
+);
+
+const DeleteIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    </svg>
+);
+
+const SaveIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+    </svg>
+);
+
+const CancelIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+);
+
+const IgnoreIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+    </svg>
+);
+
+const RestoreIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="1 4 1 10 7 10"></polyline>
+        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+    </svg>
+);
+
+const AddIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+);
+
+export default App;
