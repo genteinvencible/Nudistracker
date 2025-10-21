@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import ShareModal from './ShareModal';
-import AuthScreen from './AuthScreen';
 import { encryptData, decryptData, hashPassword } from './crypto';
 
 // --- TYPE DEFINITIONS ---
@@ -593,7 +592,7 @@ const App: React.FC = () => {
     // --- RENDER LOGIC ---
     if (appState === 'auth') {
         return (
-            <AuthScreen
+            <PasswordScreen
                 onUnlock={handleUnlock}
                 hasExistingData={hasSavedSession()}
             />
@@ -680,6 +679,111 @@ const App: React.FC = () => {
 
 // --- SUB-COMPONENTS ---
 
+// --- Password Screen Component ---
+interface PasswordScreenProps {
+    onUnlock: (password: string) => void;
+    hasExistingData: boolean;
+}
+
+const PasswordScreen: React.FC<PasswordScreenProps> = ({ onUnlock, hasExistingData }) => {
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (!password) {
+            setError('Por favor, ingresa una contraseña');
+            return;
+        }
+
+        if (!hasExistingData && password !== confirmPassword) {
+            setError('Las contraseñas no coinciden');
+            return;
+        }
+
+        if (!hasExistingData && password.length < 6) {
+            setError('La contraseña debe tener al menos 6 caracteres');
+            return;
+        }
+
+        onUnlock(password);
+    };
+
+    return (
+        <div className="welcome-container">
+            <img src="/logo-placeholder.svg" alt="Nudistracker Logo" className="welcome-logo-main" />
+            <div className="welcome-content">
+                <div className="welcome-card">
+                    <h2>{hasExistingData ? '🔐 Desbloquear Nudistracker' : '🔐 Protege tus Datos'}</h2>
+                    <p>
+                        {hasExistingData
+                            ? 'Ingresa tu contraseña maestra para acceder a tus datos financieros.'
+                            : 'Crea una contraseña maestra para cifrar y proteger tus datos financieros.'}
+                    </p>
+
+                    {error && (
+                        <div className="session-notice" style={{ backgroundColor: '#FEF2F2', borderColor: '#FCA5A5', color: '#991B1B' }}>
+                            <p>{error}</p>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                            <div>
+                                <label htmlFor="password" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>
+                                    Contraseña Maestra
+                                </label>
+                                <input
+                                    id="password"
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder={hasExistingData ? "Tu contraseña" : "Mínimo 6 caracteres"}
+                                    autoFocus
+                                    required
+                                />
+                            </div>
+
+                            {!hasExistingData && (
+                                <div>
+                                    <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>
+                                        Confirmar Contraseña
+                                    </label>
+                                    <input
+                                        id="confirmPassword"
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        placeholder="Repite tu contraseña"
+                                        required
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="session-actions">
+                            <button type="submit" className="button primary">
+                                {hasExistingData ? 'Desbloquear' : 'Crear Contraseña y Continuar'}
+                            </button>
+                        </div>
+                    </form>
+
+                    <div className="session-notice" style={{ marginTop: '2rem' }}>
+                        <p style={{ fontSize: '0.875rem' }}>
+                            <strong>⚠️ Importante:</strong> {hasExistingData
+                                ? 'Si olvidaste tu contraseña, no hay forma de recuperar tus datos. Deberás empezar de nuevo.'
+                                : 'Guarda esta contraseña en un lugar seguro. No hay forma de recuperarla si la olvidas.'}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- Welcome Screen Component ---
 interface WelcomeScreenProps {
     onNew: () => void;
@@ -690,7 +794,7 @@ interface WelcomeScreenProps {
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSession, onClear }) => {
     return (
         <div className="welcome-container">
-            <img src="https://nudistainvestor.com/wp-content/uploads/2025/10/nudsita-need-you.png" alt="Nudistracker Logo" className="welcome-logo-main" />
+            <img src="/logo-placeholder.svg" alt="Nudistracker Logo" className="welcome-logo-main" />
             <div className="welcome-content">
                 <div className="welcome-card">
                     <h2>This is Nudistracker:</h2>
