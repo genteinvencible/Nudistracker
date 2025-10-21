@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import ShareModal from './ShareModal';
+import AuthScreen from './AuthScreen';
+import { encryptData, decryptData, hashPassword } from './crypto';
 
 // --- TYPE DEFINITIONS ---
 interface Category {
@@ -27,9 +29,12 @@ interface StagedTransaction extends Transaction {
 }
 
 type NumberFormat = 'eur' | 'usa';
-type AppState = 'welcome' | 'tracker';
+type AppState = 'auth' | 'welcome' | 'tracker';
 type TrackerView = 'import' | 'transactions' | 'categories' | 'how-it-works';
 type CategoryType = 'income' | 'expense';
+
+const STORAGE_KEY = 'finanzasNudistaSession';
+const PASSWORD_HASH_KEY = 'finanzasNudistaPasswordHash';
 
 // --- HELPER FUNCTIONS ---
 const formatCurrency = (amount: number, format: NumberFormat): string => {
@@ -234,8 +239,9 @@ const autoCategorizeTransaction = (description: string, categories: Categories):
 // --- MAIN APP COMPONENT ---
 const App: React.FC = () => {
     // --- STATE MANAGEMENT ---
-    const [appState, setAppState] = useState<AppState>('welcome');
+    const [appState, setAppState] = useState<AppState>('auth');
     const [tracker_view, setTrackerView] = useState<TrackerView>('import');
+    const [userPassword, setUserPassword] = useState<string>('');
     
     const [categories, setCategories] = useState<Categories>({ income: [], expense: [] });
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -259,20 +265,29 @@ const App: React.FC = () => {
 
     // --- EFFECTS (LIFECYCLE) ---
     useEffect(() => {
-        // This effect just checks for saved data on mount to enable the 'Continue' button.
-        // It doesn't need to do anything, the check is synchronous.
+        // Check if user needs to authenticate on mount
+        const hasData = !!localStorage.getItem(STORAGE_KEY);
+        if (!hasData && appState === 'auth') {
+            // No existing data, still show auth screen to set password
+        }
     }, []);
 
     useEffect(() => {
-        if (appState === 'tracker') {
-            try {
-                const dataToSave = JSON.stringify({ transactions, categories, numberFormat });
-                localStorage.setItem('finanzasNudistaSession', dataToSave);
-            } catch (error) {
-                console.error('Error guardando sesión:', error);
-            }
+        // Auto-save encrypted data when changes occur
+        if (appState === 'tracker' && userPassword) {
+            const saveData = async () => {
+                try {
+                    const dataToSave = JSON.stringify({ transactions, categories, numberFormat });
+                    const encrypted = await encryptData(dataToSave, userPassword);
+                    localStorage.setItem(STORAGE_KEY, encrypted);
+                } catch (error) {
+                    console.error('Error guardando sesión:', error);
+                    alert('Error al guardar los datos cifrados');
+                }
+            };
+            saveData();
         }
-    }, [transactions, categories, numberFormat, appState]);
+    }, [transactions, categories, numberFormat, appState, userPassword]);
 
     // Reset import state when navigating away from import view or after finalizing
     useEffect(() => {
@@ -283,8 +298,45 @@ const App: React.FC = () => {
         }
     }, [tracker_view]);
 
+    // --- HANDLERS: AUTHENTICATION ---
+    const handleUnlock = async (password: string) => {
+        const encryptedData = localStorage.getItem(STORAGE_KEY);
+
+        if (encryptedData) {
+            // Existing user - decrypt data
+            try {
+                const decrypted = await decryptData(encryptedData, password);
+                const { transactions, categories, numberFormat: savedFormat } = JSON.parse(decrypted);
+
+                const hydratedTransactions = (transactions || []).map((t: any) => ({
+                    ...t,
+                    amount: Number(t.amount) || 0,
+                    ignored: t.ignored || false
+                }));
+
+                setTransactions(hydratedTransactions);
+                setCategories(categories || { income: [], expense: [] });
+                setNumberFormat(savedFormat || 'eur');
+                setUserPassword(password);
+                setAppState('welcome');
+            } catch (error) {
+                alert('Contraseña incorrecta. Por favor, inténtalo de nuevo.');
+            }
+        } else {
+            // New user - store password hash and proceed
+            try {
+                const hash = await hashPassword(password);
+                localStorage.setItem(PASSWORD_HASH_KEY, hash);
+                setUserPassword(password);
+                setAppState('welcome');
+            } catch (error) {
+                alert('Error al configurar la seguridad. Por favor, recarga la página.');
+            }
+        }
+    };
+
     // --- HANDLERS: SESSION & NAVIGATION ---
-    const hasSavedSession = (): boolean => !!localStorage.getItem('finanzasNudistaSession');
+    const hasSavedSession = (): boolean => !!localStorage.getItem(STORAGE_KEY);
 
     const handleNewSession = () => {
         setCategories({ income: [], expense: [] });
@@ -294,24 +346,26 @@ const App: React.FC = () => {
         setTrackerView('import');
     };
 
-    const handleContinueSession = () => {
-        const savedData = localStorage.getItem('finanzasNudistaSession');
-        if (savedData) {
-            const { transactions, categories, numberFormat: savedFormat } = JSON.parse(savedData);
-            // FIX: Ensure all transactions have an 'ignored' property and that 'amount' is a number for backwards compatibility.
-            // This prevents type errors in calculations when data is loaded from localStorage.
-            const hydratedTransactions = (transactions || []).map((t: any) => ({ ...t, amount: Number(t.amount) || 0, ignored: t.ignored || false }));
-            setTransactions(hydratedTransactions);
-            setCategories(categories || { income: [], expense: [] });
-            setNumberFormat(savedFormat || 'eur');
-        }
+    const handleContinueSession = async () => {
+        // Data is already loaded from handleUnlock
         setAppState('tracker');
         setTrackerView('transactions');
     };
 
     const handleClearSession = () => {
-        localStorage.removeItem('finanzasNudistaSession');
-        setAppState('welcome'); // Force re-render of welcome screen
+        const confirmed = window.confirm(
+            '⚠️ ADVERTENCIA: Esto eliminará TODOS tus datos de forma permanente.\n\n' +
+            'Esta acción NO se puede deshacer. ¿Estás seguro?'
+        );
+
+        if (confirmed) {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(PASSWORD_HASH_KEY);
+            setTransactions([]);
+            setCategories({ income: [], expense: [] });
+            setUserPassword('');
+            setAppState('auth');
+        }
     };
 
     const handleGoToWelcome = () => {
@@ -537,6 +591,15 @@ const App: React.FC = () => {
     };
 
     // --- RENDER LOGIC ---
+    if (appState === 'auth') {
+        return (
+            <AuthScreen
+                onUnlock={handleUnlock}
+                hasExistingData={hasSavedSession()}
+            />
+        );
+    }
+
     if (appState === 'welcome') {
         return <WelcomeScreen onNew={handleNewSession} onContinue={handleContinueSession} hasSession={hasSavedSession()} onClear={handleClearSession} />;
     }
@@ -640,6 +703,18 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                             <li>Visualiza, categoriza y entiende a dónde va tu dinero.</li>
                         </ol>
                     </div>
+
+                    <div className="security-warning-box">
+                        <h4>🔒 Seguridad y Privacidad</h4>
+                        <ul>
+                            <li>✅ Tus datos están cifrados con tu contraseña</li>
+                            <li>✅ Todo se guarda SOLO en este navegador</li>
+                            <li>✅ Sin servidores externos, sin registro de usuarios</li>
+                            <li>⚠️ Si borras el navegador o las cookies, perderás los datos</li>
+                            <li>⚠️ No uses en ordenadores públicos o compartidos</li>
+                        </ul>
+                    </div>
+
                     {hasSession && (
                          <div className="session-notice">
                             <p>Hemos detectado una sesión guardada. Puedes continuar donde lo dejaste o empezar de nuevo (esto borrará tus datos anteriores).</p>
