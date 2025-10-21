@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import ShareModal from './ShareModal';
-import { encryptData, decryptData, hashPassword } from './crypto';
 
 // --- TYPE DEFINITIONS ---
 interface Category {
@@ -28,12 +27,11 @@ interface StagedTransaction extends Transaction {
 }
 
 type NumberFormat = 'eur' | 'usa';
-type AppState = 'auth' | 'welcome' | 'tracker';
+type AppState = 'welcome' | 'tracker';
 type TrackerView = 'import' | 'transactions' | 'categories' | 'how-it-works';
 type CategoryType = 'income' | 'expense';
 
 const STORAGE_KEY = 'finanzasNudistaSession';
-const PASSWORD_HASH_KEY = 'finanzasNudistaPasswordHash';
 
 // --- HELPER FUNCTIONS ---
 const formatCurrency = (amount: number, format: NumberFormat): string => {
@@ -238,9 +236,8 @@ const autoCategorizeTransaction = (description: string, categories: Categories):
 // --- MAIN APP COMPONENT ---
 const App: React.FC = () => {
     // --- STATE MANAGEMENT ---
-    const [appState, setAppState] = useState<AppState>('auth');
+    const [appState, setAppState] = useState<AppState>('welcome');
     const [tracker_view, setTrackerView] = useState<TrackerView>('import');
-    const [userPassword, setUserPassword] = useState<string>('');
     
     const [categories, setCategories] = useState<Categories>({ income: [], expense: [] });
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -264,29 +261,32 @@ const App: React.FC = () => {
 
     // --- EFFECTS (LIFECYCLE) ---
     useEffect(() => {
-        // Check if user needs to authenticate on mount
-        const hasData = !!localStorage.getItem(STORAGE_KEY);
-        if (!hasData && appState === 'auth') {
-            // No existing data, still show auth screen to set password
+        // Load data from localStorage on mount
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (savedData) {
+            try {
+                const { transactions, categories, numberFormat: savedFormat } = JSON.parse(savedData);
+                const hydratedTransactions = (transactions || []).map((t: any) => ({
+                    ...t,
+                    amount: Number(t.amount) || 0,
+                    ignored: t.ignored || false
+                }));
+                setTransactions(hydratedTransactions);
+                setCategories(categories || { income: [], expense: [] });
+                setNumberFormat(savedFormat || 'eur');
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
         }
     }, []);
 
     useEffect(() => {
-        // Auto-save encrypted data when changes occur
-        if (appState === 'tracker' && userPassword) {
-            const saveData = async () => {
-                try {
-                    const dataToSave = JSON.stringify({ transactions, categories, numberFormat });
-                    const encrypted = await encryptData(dataToSave, userPassword);
-                    localStorage.setItem(STORAGE_KEY, encrypted);
-                } catch (error) {
-                    console.error('Error guardando sesión:', error);
-                    alert('Error al guardar los datos cifrados');
-                }
-            };
-            saveData();
+        // Auto-save data when changes occur
+        if (appState === 'tracker') {
+            const dataToSave = JSON.stringify({ transactions, categories, numberFormat });
+            localStorage.setItem(STORAGE_KEY, dataToSave);
         }
-    }, [transactions, categories, numberFormat, appState, userPassword]);
+    }, [transactions, categories, numberFormat, appState]);
 
     // Reset import state when navigating away from import view or after finalizing
     useEffect(() => {
@@ -297,42 +297,6 @@ const App: React.FC = () => {
         }
     }, [tracker_view]);
 
-    // --- HANDLERS: AUTHENTICATION ---
-    const handleUnlock = async (password: string) => {
-        const encryptedData = localStorage.getItem(STORAGE_KEY);
-
-        if (encryptedData) {
-            // Existing user - decrypt data
-            try {
-                const decrypted = await decryptData(encryptedData, password);
-                const { transactions, categories, numberFormat: savedFormat } = JSON.parse(decrypted);
-
-                const hydratedTransactions = (transactions || []).map((t: any) => ({
-                    ...t,
-                    amount: Number(t.amount) || 0,
-                    ignored: t.ignored || false
-                }));
-
-                setTransactions(hydratedTransactions);
-                setCategories(categories || { income: [], expense: [] });
-                setNumberFormat(savedFormat || 'eur');
-                setUserPassword(password);
-                setAppState('welcome');
-            } catch (error) {
-                alert('Contraseña incorrecta. Por favor, inténtalo de nuevo.');
-            }
-        } else {
-            // New user - store password hash and proceed
-            try {
-                const hash = await hashPassword(password);
-                localStorage.setItem(PASSWORD_HASH_KEY, hash);
-                setUserPassword(password);
-                setAppState('welcome');
-            } catch (error) {
-                alert('Error al configurar la seguridad. Por favor, recarga la página.');
-            }
-        }
-    };
 
     // --- HANDLERS: SESSION & NAVIGATION ---
     const hasSavedSession = (): boolean => !!localStorage.getItem(STORAGE_KEY);
@@ -345,8 +309,8 @@ const App: React.FC = () => {
         setTrackerView('import');
     };
 
-    const handleContinueSession = async () => {
-        // Data is already loaded from handleUnlock
+    const handleContinueSession = () => {
+        // Data is already loaded from useEffect
         setAppState('tracker');
         setTrackerView('transactions');
     };
@@ -359,11 +323,9 @@ const App: React.FC = () => {
 
         if (confirmed) {
             localStorage.removeItem(STORAGE_KEY);
-            localStorage.removeItem(PASSWORD_HASH_KEY);
             setTransactions([]);
             setCategories({ income: [], expense: [] });
-            setUserPassword('');
-            setAppState('auth');
+            setAppState('welcome');
         }
     };
 
@@ -379,16 +341,6 @@ const App: React.FC = () => {
         }
     };
 
-    const handleLogout = () => {
-        const confirmLogout = window.confirm('¿Cerrar sesión? Tus datos quedan cifrados y seguros. Necesitarás tu contraseña para volver a acceder.');
-        if (confirmLogout) {
-            setUserPassword('');
-            setTransactions([]);
-            setCategories({ income: [], expense: [] });
-            setStagedTransactions([]);
-            setAppState('auth');
-        }
-    };
 
     // --- HANDLERS: FILE IMPORT ---
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -601,15 +553,6 @@ const App: React.FC = () => {
     };
 
     // --- RENDER LOGIC ---
-    if (appState === 'auth') {
-        return (
-            <PasswordScreen
-                onUnlock={handleUnlock}
-                hasExistingData={hasSavedSession()}
-            />
-        );
-    }
-
     if (appState === 'welcome') {
         return <WelcomeScreen onNew={handleNewSession} onContinue={handleContinueSession} hasSession={hasSavedSession()} onClear={handleClearSession} />;
     }
@@ -632,7 +575,7 @@ const App: React.FC = () => {
     // --- RENDER ---
     return (
         <div className="app-container">
-            <AppHeader onGoToWelcome={handleGoToWelcome} activeView={tracker_view} onNavigate={setTrackerView} onLogout={handleLogout} />
+            <AppHeader onGoToWelcome={handleGoToWelcome} activeView={tracker_view} onNavigate={setTrackerView} />
             <main className="app-content">
                 {tracker_view === 'import' && 
                     <ImportView
@@ -691,109 +634,6 @@ const App: React.FC = () => {
 // --- SUB-COMPONENTS ---
 
 // --- Password Screen Component ---
-interface PasswordScreenProps {
-    onUnlock: (password: string) => void;
-    hasExistingData: boolean;
-}
-
-const PasswordScreen: React.FC<PasswordScreenProps> = ({ onUnlock, hasExistingData }) => {
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-
-        if (!password) {
-            setError('Por favor, ingresa una contraseña');
-            return;
-        }
-
-        if (!hasExistingData && password !== confirmPassword) {
-            setError('Las contraseñas no coinciden');
-            return;
-        }
-
-        if (!hasExistingData && password.length < 6) {
-            setError('La contraseña debe tener al menos 6 caracteres');
-            return;
-        }
-
-        onUnlock(password);
-    };
-
-    return (
-        <div className="welcome-container">
-            <img src="https://nudistainvestor.com/wp-content/uploads/2025/10/nudsita-need-you.png" alt="Nudistracker Logo" className="welcome-logo-main" />
-            <div className="welcome-content">
-                <div className="welcome-card">
-                    <h2>{hasExistingData ? '🔐 Desbloquear Nudistracker' : '🔐 Protege tus Datos'}</h2>
-                    <p>
-                        {hasExistingData
-                            ? 'Ingresa tu contraseña maestra para acceder a tus datos financieros.'
-                            : 'Crea una contraseña maestra para cifrar y proteger tus datos financieros.'}
-                    </p>
-
-                    {error && (
-                        <div className="session-notice" style={{ backgroundColor: '#FEF2F2', borderColor: '#FCA5A5', color: '#991B1B' }}>
-                            <p>{error}</p>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
-                            <div>
-                                <label htmlFor="password" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>
-                                    Contraseña Maestra
-                                </label>
-                                <input
-                                    id="password"
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder={hasExistingData ? "Tu contraseña" : "Mínimo 6 caracteres"}
-                                    autoFocus
-                                    required
-                                />
-                            </div>
-
-                            {!hasExistingData && (
-                                <div>
-                                    <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 600 }}>
-                                        Confirmar Contraseña
-                                    </label>
-                                    <input
-                                        id="confirmPassword"
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        placeholder="Repite tu contraseña"
-                                        required
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="session-actions">
-                            <button type="submit" className="button primary">
-                                {hasExistingData ? 'Desbloquear' : 'Crear Contraseña y Continuar'}
-                            </button>
-                        </div>
-                    </form>
-
-                    <div className="session-notice" style={{ marginTop: '2rem' }}>
-                        <p style={{ fontSize: '0.875rem' }}>
-                            <strong>⚠️ Importante:</strong> {hasExistingData
-                                ? 'Si olvidaste tu contraseña, no hay forma de recuperar tus datos. Deberás empezar de nuevo.'
-                                : 'Guarda esta contraseña en un lugar seguro. No hay forma de recuperarla si la olvidas.'}
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
 
 // --- Welcome Screen Component ---
 interface WelcomeScreenProps {
@@ -822,8 +662,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                     <div className="security-warning-box">
                         <h4>🔒 Seguridad y Privacidad</h4>
                         <ul>
-                            <li>✅ Tus datos están cifrados con tu contraseña</li>
-                            <li>✅ Todo se guarda SOLO en este navegador</li>
+                            <li>✅ Tus datos se guardan SOLO en este navegador</li>
                             <li>✅ Sin servidores externos, sin registro de usuarios</li>
                             <li>⚠️ Si borras el navegador o las cookies, perderás los datos</li>
                             <li>⚠️ No uses en ordenadores públicos o compartidos</li>
@@ -851,9 +690,8 @@ interface AppHeaderProps {
     onGoToWelcome: () => void;
     activeView: TrackerView;
     onNavigate: (view: TrackerView) => void;
-    onLogout: () => void;
 }
-const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavigate, onLogout }) => {
+const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavigate }) => {
     return (
         <header className="app-header">
             <div className="app-logo-title" onClick={onGoToWelcome}>
@@ -864,7 +702,6 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavi
                 <button className={activeView === 'categories' ? 'active' : ''} onClick={() => onNavigate('categories')}>Categorías</button>
                 <button className={activeView === 'import' ? 'active' : ''} onClick={() => onNavigate('import')}>Importar</button>
                 <button className={activeView === 'how-it-works' ? 'active' : ''} onClick={() => onNavigate('how-it-works')}>Cómo funciona</button>
-                <button onClick={onLogout} style={{ marginLeft: 'auto', color: 'var(--color-accent)', fontWeight: 600 }}>🔒 Cerrar Sesión</button>
             </nav>
         </header>
     );
