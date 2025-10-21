@@ -725,7 +725,7 @@ const PasswordScreen: React.FC<PasswordScreenProps> = ({ onUnlock, hasExistingDa
 
     return (
         <div className="welcome-container">
-            <img src="/logo-placeholder.svg" alt="Nudistracker Logo" className="welcome-logo-main" />
+            <img src="https://nudistainvestor.com/wp-content/uploads/2025/10/nudsita-need-you.png" alt="Nudistracker Logo" className="welcome-logo-main" />
             <div className="welcome-content">
                 <div className="welcome-card">
                     <h2>{hasExistingData ? '🔐 Desbloquear Nudistracker' : '🔐 Protege tus Datos'}</h2>
@@ -805,7 +805,7 @@ interface WelcomeScreenProps {
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSession, onClear }) => {
     return (
         <div className="welcome-container">
-            <img src="/logo-placeholder.svg" alt="Nudistracker Logo" className="welcome-logo-main" />
+            <img src="https://nudistainvestor.com/wp-content/uploads/2025/10/nudsita-need-you.png" alt="Nudistracker Logo" className="welcome-logo-main" />
             <div className="welcome-content">
                 <div className="welcome-card">
                     <h2>This is Nudistracker:</h2>
