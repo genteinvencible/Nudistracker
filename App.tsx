@@ -378,7 +378,18 @@ const App: React.FC = () => {
             setMappedColumns({ date: '', description: '', amount: '' });
         }
     };
-    
+
+    const handleLogout = () => {
+        const confirmLogout = window.confirm('¿Cerrar sesión? Tus datos quedan cifrados y seguros. Necesitarás tu contraseña para volver a acceder.');
+        if (confirmLogout) {
+            setUserPassword('');
+            setTransactions([]);
+            setCategories({ income: [], expense: [] });
+            setStagedTransactions([]);
+            setAppState('auth');
+        }
+    };
+
     // --- HANDLERS: FILE IMPORT ---
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -621,7 +632,7 @@ const App: React.FC = () => {
     // --- RENDER ---
     return (
         <div className="app-container">
-            <AppHeader onGoToWelcome={handleGoToWelcome} activeView={tracker_view} onNavigate={setTrackerView} />
+            <AppHeader onGoToWelcome={handleGoToWelcome} activeView={tracker_view} onNavigate={setTrackerView} onLogout={handleLogout} />
             <main className="app-content">
                 {tracker_view === 'import' && 
                     <ImportView
@@ -840,8 +851,9 @@ interface AppHeaderProps {
     onGoToWelcome: () => void;
     activeView: TrackerView;
     onNavigate: (view: TrackerView) => void;
+    onLogout: () => void;
 }
-const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavigate }) => {
+const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavigate, onLogout }) => {
     return (
         <header className="app-header">
             <div className="app-logo-title" onClick={onGoToWelcome}>
@@ -852,6 +864,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavi
                 <button className={activeView === 'categories' ? 'active' : ''} onClick={() => onNavigate('categories')}>Categorías</button>
                 <button className={activeView === 'import' ? 'active' : ''} onClick={() => onNavigate('import')}>Importar</button>
                 <button className={activeView === 'how-it-works' ? 'active' : ''} onClick={() => onNavigate('how-it-works')}>Cómo funciona</button>
+                <button onClick={onLogout} style={{ marginLeft: 'auto', color: 'var(--color-accent)', fontWeight: 600 }}>🔒 Cerrar Sesión</button>
             </nav>
         </header>
     );
