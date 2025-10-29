@@ -113,6 +113,11 @@ const parseDate = (dateValue: any): string => {
 const parseAmount = (numStr: string, format: NumberFormat): number => {
     if (numStr === null || numStr === undefined) return 0;
 
+    // If it's already a valid number, return it directly
+    if (typeof numStr === 'number') {
+        return numStr;
+    }
+
     const cleanedStr = String(numStr).replace(/[^\d.,-]/g, '').trim();
 
     if (!cleanedStr || cleanedStr === '-') return 0;
