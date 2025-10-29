@@ -925,6 +925,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                             <li>Exporta tus movimientos bancarios a un archivo CSV o Excel.</li>
                             <li>Haz clic en "Nueva Sesión" e importa tu archivo.</li>
                             <li>Visualiza, categoriza y entiende a dónde va tu dinero.</li>
+                            <li>Exporta tus datos cuando quieras para hacer backup.</li>
                         </ol>
                     </div>
 
@@ -935,6 +936,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                             <li>✅ Sin servidores externos, sin registro de usuarios</li>
                             <li>⚠️ Si borras el navegador o las cookies, perderás los datos</li>
                             <li>⚠️ No uses en ordenadores públicos o compartidos</li>
+                            <li>💡 Usa "Exportar Datos" regularmente para guardar backups</li>
                         </ul>
                     </div>
 
@@ -944,8 +946,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                         </div>
                     )}
                     <div className="session-actions">
-                        <button className="button primary" onClick={onNew}>Nueva Sesión</button>
-                        {hasSession && <button className="button" onClick={onContinue}>Continuar Sesión</button>}
+                        <button className="button primary" onClick={onNew} title="Comienza una nueva sesión desde cero">Nueva Sesión</button>
+                        {hasSession && <button className="button" onClick={onContinue} title="Continúa con tus datos guardados">Continuar Sesión</button>}
                         <input
                             type="file"
                             ref={importFileInputRef}
@@ -953,9 +955,9 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                             onChange={handleImportData}
                             style={{ display: 'none' }}
                         />
-                        <button className="button" onClick={handleImportClick}>Importar Datos</button>
+                        <button className="button" onClick={handleImportClick} title="Restaura un backup de Nudistracker (.json)">Importar Datos</button>
                     </div>
-                    {hasSession && <button className="button text-danger" onClick={onClear}>Borrar datos y empezar de cero</button>}
+                    {hasSession && <button className="button text-danger" onClick={onClear} title="Elimina permanentemente todos tus datos guardados">Borrar datos y empezar de cero</button>}
                 </div>
             </div>
         </div>
