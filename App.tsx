@@ -110,12 +110,12 @@ const parseDate = (dateValue: any): string => {
     return 'Invalid Date';
 };
 
-const parseAmount = (numStr: string, format: NumberFormat): number => {
-    if (numStr === null || numStr === undefined) return 0;
+const parseAmount = (numStr: any, format: NumberFormat): number => {
+    if (numStr === null || numStr === undefined || numStr === '') return 0;
 
     // If it's already a valid number, return it directly
     if (typeof numStr === 'number') {
-        return numStr;
+        return isNaN(numStr) ? 0 : numStr;
     }
 
     const cleanedStr = String(numStr).replace(/[^\d.,-]/g, '').trim();
@@ -505,7 +505,7 @@ const App: React.FC = () => {
 
                 const date = parseDate(row[dateIndex]);
                 const description = String(row[descIndex] || '');
-                const rawAmount = String(row[amountIndex] || '0');
+                const rawAmount = row[amountIndex] || 0;
                 const amount = parseAmount(rawAmount, numberFormat);
 
                 return {
@@ -961,14 +961,14 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                                                     }
 
                                                     if (isAmountColumn) {
-                                                        const rawValue = String(cell || '');
+                                                        const rawValue = cell;
                                                         const parsedValue = parseAmount(rawValue, numberFormat);
                                                         const formattedValue = numberFormat === 'eur'
                                                             ? parsedValue.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigals: 2 })
                                                             : parsedValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                                         return (
                                                             <td key={j} title={`Original: ${rawValue} → Interpretado: ${parsedValue}`}>
-                                                                {rawValue} → {formattedValue}
+                                                                {String(rawValue || '')} → {formattedValue}
                                                             </td>
                                                         );
                                                     }
