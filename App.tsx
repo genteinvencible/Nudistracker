@@ -54,7 +54,7 @@ const normalizeString = (str: string): string => {
 const parseDate = (dateValue: any): string => {
     if (!dateValue && dateValue !== 0) return 'Invalid Date';
 
-    // Handle Date objects first
+    // Handle Date objects first (from XLSX with cellDates: true)
     if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
         const day = dateValue.getDate().toString().padStart(2, '0');
         const month = (dateValue.getMonth() + 1).toString().padStart(2, '0');
@@ -62,7 +62,7 @@ const parseDate = (dateValue: any): string => {
         return `${day}/${month}/${year}`;
     }
 
-    // Handle Excel's numeric date format
+    // Handle Excel's numeric date format (from XLSX when cellDates: false)
     if (typeof dateValue === 'number' && dateValue > 0 && dateValue < 100000) {
         // Excel date: days since 1900-01-01 (with 1900 leap year bug)
         const excelEpoch = new Date(Date.UTC(1899, 11, 30));
@@ -78,29 +78,7 @@ const parseDate = (dateValue: any): string => {
         const trimmed = dateValue.trim();
         if (!trimmed) return 'Invalid Date';
 
-        // DD/MM/YYYY or DD-MM-YYYY format (European)
-        if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(trimmed)) {
-            const parts = trimmed.split(/[\/\-]/);
-            const day = parseInt(parts[0], 10);
-            const month = parseInt(parts[1], 10);
-            let year = parseInt(parts[2], 10);
-
-            // Handle 2-digit years
-            if (year < 100) {
-                year += year < 50 ? 2000 : 1900;
-            }
-
-            // Validate ranges
-            if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
-                const date = new Date(year, month - 1, day);
-                // Verify the date is valid (handles Feb 30, etc.)
-                if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
-                    return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
-                }
-            }
-        }
-
-        // YYYY-MM-DD format (ISO)
+        // YYYY-MM-DD format (ISO) - Check this FIRST to avoid ambiguity
         if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(trimmed)) {
             const parts = trimmed.split(/[\/\-]/);
             const year = parseInt(parts[0], 10);
@@ -111,6 +89,57 @@ const parseDate = (dateValue: any): string => {
                 const date = new Date(year, month - 1, day);
                 if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
                     return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+                }
+            }
+        }
+
+        // DD/MM/YYYY or MM/DD/YYYY format - ambiguous!
+        // We need to be smart: try both and pick the valid one
+        if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(trimmed)) {
+            const parts = trimmed.split(/[\/\-]/);
+            const num1 = parseInt(parts[0], 10);
+            const num2 = parseInt(parts[1], 10);
+            let year = parseInt(parts[2], 10);
+
+            // Handle 2-digit years
+            if (year < 100) {
+                year += year < 50 ? 2000 : 1900;
+            }
+
+            // Check if it's unambiguous (e.g., 31/12/2023 can only be DD/MM)
+            const onlyValidAsEuropean = num1 > 12 && num2 <= 12;
+            const onlyValidAsAmerican = num2 > 12 && num1 <= 12;
+
+            if (onlyValidAsEuropean) {
+                // Must be DD/MM/YYYY
+                const day = num1;
+                const month = num2;
+                if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
+                    const date = new Date(year, month - 1, day);
+                    if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+                        return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+                    }
+                }
+            } else if (onlyValidAsAmerican) {
+                // Must be MM/DD/YYYY
+                const month = num1;
+                const day = num2;
+                if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
+                    const date = new Date(year, month - 1, day);
+                    if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+                        return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+                    }
+                }
+            } else {
+                // Ambiguous case (e.g., 01/02/2023 could be Jan 2 or Feb 1)
+                // Try European format first (most common in the target market)
+                const dayEU = num1;
+                const monthEU = num2;
+                if (dayEU >= 1 && dayEU <= 31 && monthEU >= 1 && monthEU <= 12 && year >= 1900 && year <= 2100) {
+                    const date = new Date(year, monthEU - 1, dayEU);
+                    if (date.getFullYear() === year && date.getMonth() === monthEU - 1 && date.getDate() === dayEU) {
+                        return `${dayEU.toString().padStart(2, '0')}/${monthEU.toString().padStart(2, '0')}/${year}`;
+                    }
                 }
             }
         }
@@ -127,46 +156,92 @@ const parseAmount = (numStr: any, format: NumberFormat): number => {
         return isNaN(numStr) ? 0 : numStr;
     }
 
-    const cleanedStr = String(numStr).replace(/[^\d.,-]/g, '').trim();
+    // Convert to string and clean
+    const str = String(numStr).trim();
+    if (!str) return 0;
 
-    if (!cleanedStr || cleanedStr === '-') return 0;
+    // Remove currency symbols, spaces, and other non-numeric chars except . , -
+    const cleanedStr = str.replace(/[^\d.,-]/g, '');
 
-    let parsableStr = cleanedStr;
+    if (!cleanedStr || cleanedStr === '-' || cleanedStr === '+') return 0;
+
+    // Handle negative numbers
+    const isNegative = cleanedStr.startsWith('-');
+    const absStr = cleanedStr.replace(/^-/, '');
+
+    const hasDot = absStr.includes('.');
+    const hasComma = absStr.includes(',');
+
+    let parsableStr = absStr;
 
     if (format === 'eur') {
-        // European format: 1.234,56 or 1234,56 -> 1234.56
-        const hasDot = cleanedStr.includes('.');
-        const hasComma = cleanedStr.includes(',');
-
+        // European format: 1.234,56 (thousands: dot, decimal: comma)
         if (hasDot && hasComma) {
-            // Both present: dots are thousands, comma is decimal -> 1.234,56
-            parsableStr = cleanedStr.replace(/\./g, '').replace(/,/g, '.');
+            // Both present: dots are thousands, comma is decimal
+            // Example: "1.234.567,89" -> 1234567.89
+            parsableStr = absStr.replace(/\./g, '').replace(',', '.');
         } else if (hasComma) {
-            // Only comma: it's the decimal separator -> 1234,56
-            parsableStr = cleanedStr.replace(/,/g, '.');
-        } else {
-            // Only dot or neither: treat as-is -> 1234.56 or 1234
-            parsableStr = cleanedStr;
+            // Only comma: check position to determine if it's decimal or thousands
+            const commaPos = absStr.lastIndexOf(',');
+            const digitsAfterComma = absStr.length - commaPos - 1;
+
+            // If there are exactly 2 or 3 digits after comma, it's likely decimal
+            // Otherwise treat as thousands separator
+            if (digitsAfterComma === 2 || digitsAfterComma === 3) {
+                parsableStr = absStr.replace(',', '.');
+            } else {
+                // Unlikely, but treat as thousands separator
+                parsableStr = absStr.replace(/,/g, '');
+            }
+        } else if (hasDot) {
+            // Only dot: check position to determine if it's decimal or thousands
+            const dotPos = absStr.lastIndexOf('.');
+            const digitsAfterDot = absStr.length - dotPos - 1;
+
+            // If there are exactly 2 or 3 digits after dot, it's likely decimal
+            // If 3 digits and appears multiple times, it's thousands
+            const dotCount = (absStr.match(/\./g) || []).length;
+
+            if (dotCount > 1 || (digitsAfterDot === 3 && absStr.length > 7)) {
+                // Thousands separator: "1.234.567" or "1.234"
+                parsableStr = absStr.replace(/\./g, '');
+            } else {
+                // Decimal separator: "1234.56"
+                parsableStr = absStr;
+            }
         }
-    } else { // 'usa'
-        // American format: 1,234.56 or 1234.56 -> 1234.56
-        const hasDot = cleanedStr.includes('.');
-        const hasComma = cleanedStr.includes(',');
-
+    } else {
+        // American format: 1,234.56 (thousands: comma, decimal: dot)
         if (hasDot && hasComma) {
-            // Both present: commas are thousands, dot is decimal -> 1,234.56
-            parsableStr = cleanedStr.replace(/,/g, '');
+            // Both present: commas are thousands, dot is decimal
+            parsableStr = absStr.replace(/,/g, '');
         } else if (hasComma) {
-            // Only comma: remove it (thousand separator) -> 1,234
-            parsableStr = cleanedStr.replace(/,/g, '');
-        } else {
-            // Only dot or neither: treat as-is -> 1234.56 or 1234
-            parsableStr = cleanedStr;
+            // Only comma: check position to determine if it's decimal or thousands
+            const commaPos = absStr.lastIndexOf(',');
+            const digitsAfterComma = absStr.length - commaPos - 1;
+            const commaCount = (absStr.match(/,/g) || []).length;
+
+            // Multiple commas = thousands: "1,234,567"
+            // 3 digits after last comma = thousands: "1,234"
+            if (commaCount > 1 || (digitsAfterComma === 3 && absStr.length > 7)) {
+                parsableStr = absStr.replace(/,/g, '');
+            } else if (digitsAfterComma === 2) {
+                // Likely decimal: "1234,56"
+                parsableStr = absStr.replace(',', '.');
+            } else {
+                // Default: treat as thousands
+                parsableStr = absStr.replace(/,/g, '');
+            }
+        } else if (hasDot) {
+            // Only dot: decimal separator
+            parsableStr = absStr;
         }
     }
 
-    const result = parseFloat(parsableStr);
-    return isNaN(result) ? 0 : result;
+    let result = parseFloat(parsableStr);
+    if (isNaN(result)) return 0;
+
+    return isNegative ? -result : result;
 };
 
 const getSortableTime = (dateString: string): number => {
@@ -439,7 +514,11 @@ const App: React.FC = () => {
 
             let headerRowIndex = -1;
             let headers: string[] = [];
-            const commonHeaders = ['fecha', 'descripcion', 'concepto', 'importe', 'valor', 'cantidad'];
+            const commonHeaders = [
+                'fecha', 'date', 'dia', 'day',
+                'descripcion', 'description', 'concepto', 'concept', 'detalle', 'detail', 'movimiento',
+                'importe', 'amount', 'valor', 'value', 'cantidad', 'quantity', 'monto', 'total'
+            ];
             for (let i = 0; i < Math.min(20, jsonData.length); i++) {
                 const row = jsonData[i].map(h => String(h || '').toLowerCase().trim());
                 const score = row.filter(cell => commonHeaders.some(ch => cell.includes(ch))).length;
@@ -469,9 +548,24 @@ const App: React.FC = () => {
             const autoMapped = { date: '', description: '', amount: ''};
             headers.forEach(header => {
                 const h = header.toLowerCase();
-                if (!autoMapped.date && (h.includes('fecha') || h.includes('date'))) autoMapped.date = header;
-                if (!autoMapped.description && (h.includes('descrip') || h.includes('concepto'))) autoMapped.description = header;
-                if (!autoMapped.amount && (h.includes('importe') || h.includes('valor') || h.includes('cantidad'))) autoMapped.amount = header;
+                if (!autoMapped.date && (
+                    h.includes('fecha') || h.includes('date') || h === 'dia' || h === 'day'
+                )) {
+                    autoMapped.date = header;
+                }
+                if (!autoMapped.description && (
+                    h.includes('descrip') || h.includes('concepto') || h.includes('concept') ||
+                    h.includes('detalle') || h.includes('detail') || h.includes('movimiento')
+                )) {
+                    autoMapped.description = header;
+                }
+                if (!autoMapped.amount && (
+                    h.includes('importe') || h.includes('amount') || h.includes('valor') ||
+                    h.includes('value') || h.includes('cantidad') || h.includes('quantity') ||
+                    h.includes('monto') || h === 'total'
+                )) {
+                    autoMapped.amount = header;
+                }
             });
             setMappedColumns(autoMapped);
 
@@ -511,17 +605,50 @@ const App: React.FC = () => {
                 throw new Error('Columnas mapeadas no encontradas en el archivo');
             }
 
+            console.log('=== INICIO PROCESAMIENTO ===');
+            console.log('Formato numérico seleccionado:', numberFormat);
+            console.log('Total filas a procesar:', parsedData.length);
+            console.log('Columnas mapeadas:', { date: mappedColumns.date, description: mappedColumns.description, amount: mappedColumns.amount });
+
             let invalidDatesCount = 0;
             let emptyDescriptionsCount = 0;
+            const dateParseErrors: Array<{row: number, raw: any, parsed: string}> = [];
+            const amountParseErrors: Array<{row: number, raw: any, parsed: number}> = [];
 
             const newTransactions = parsedData.map((row, index) => {
-                const date = parseDate(row[dateIndex]);
+                const rawDate = row[dateIndex];
+                const date = parseDate(rawDate);
                 const description = String(row[descIndex] || '').trim();
                 const rawAmount = row[amountIndex] || 0;
                 const amount = parseAmount(rawAmount, numberFormat);
 
-                if (date === 'Invalid Date') invalidDatesCount++;
-                if (!description) emptyDescriptionsCount++;
+                // Log first 3 rows for debugging
+                if (index < 3) {
+                    console.log(`Fila ${index + 1}:`, {
+                        rawDate: rawDate,
+                        parsedDate: date,
+                        dateType: typeof rawDate,
+                        rawAmount: rawAmount,
+                        parsedAmount: amount,
+                        amountType: typeof rawAmount,
+                        description: description
+                    });
+                }
+
+                if (date === 'Invalid Date') {
+                    invalidDatesCount++;
+                    if (dateParseErrors.length < 5) {
+                        dateParseErrors.push({ row: index + 1, raw: rawDate, parsed: date });
+                    }
+                }
+                if (!description) {
+                    emptyDescriptionsCount++;
+                }
+                if (amount === 0 && rawAmount !== 0 && rawAmount !== '0') {
+                    if (amountParseErrors.length < 5) {
+                        amountParseErrors.push({ row: index + 1, raw: rawAmount, parsed: amount });
+                    }
+                }
 
                 return {
                     id: `staged-${Date.now()}-${index}`,
@@ -536,6 +663,17 @@ const App: React.FC = () => {
                 return t.date !== 'Invalid Date' && t.description !== '';
             });
 
+            console.log('=== RESULTADO PROCESAMIENTO ===');
+            console.log('Transacciones válidas:', newTransactions.length);
+            console.log('Fechas inválidas:', invalidDatesCount);
+            console.log('Descripciones vacías:', emptyDescriptionsCount);
+            if (dateParseErrors.length > 0) {
+                console.warn('Ejemplos de fechas inválidas:', dateParseErrors);
+            }
+            if (amountParseErrors.length > 0) {
+                console.warn('Ejemplos de importes problemáticos:', amountParseErrors);
+            }
+
             if (newTransactions.length === 0) {
                 let errorMsg = 'No se encontraron transacciones válidas en el archivo.\\n\\n';
                 if (invalidDatesCount > 0) {
@@ -545,6 +683,7 @@ const App: React.FC = () => {
                     errorMsg += `${emptyDescriptionsCount} filas sin descripción.\\n`;
                 }
                 errorMsg += '\\nVerifica que hayas mapeado correctamente las columnas.';
+                errorMsg += '\\n\\nPara más detalles, abre la consola del navegador (F12).';
                 alert(errorMsg);
                 return;
             }
