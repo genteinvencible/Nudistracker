@@ -946,8 +946,6 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                     <div className="session-actions">
                         <button className="button primary" onClick={onNew}>Nueva Sesión</button>
                         {hasSession && <button className="button" onClick={onContinue}>Continuar Sesión</button>}
-                    </div>
-                    <div className="import-export-actions">
                         <input
                             type="file"
                             ref={importFileInputRef}
@@ -955,7 +953,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                             onChange={handleImportData}
                             style={{ display: 'none' }}
                         />
-                        <button className="button secondary" onClick={handleImportClick}>📂 Importar Backup</button>
+                        <button className="button" onClick={handleImportClick}>Importar Datos</button>
                     </div>
                     {hasSession && <button className="button text-danger" onClick={onClear}>Borrar datos y empezar de cero</button>}
                 </div>
