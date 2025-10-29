@@ -329,6 +329,61 @@ const App: React.FC = () => {
         }
     };
 
+    const handleExportData = () => {
+        const dataToExport = {
+            transactions,
+            categories,
+            numberFormat,
+            exportDate: new Date().toISOString()
+        };
+
+        const dataStr = JSON.stringify(dataToExport, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `nudistracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
+    const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target?.result as string);
+
+                if (!importedData.transactions || !importedData.categories) {
+                    throw new Error('Formato de archivo inválido');
+                }
+
+                const confirmed = window.confirm(
+                    '¿Estás seguro de que quieres importar estos datos?\n\n' +
+                    'Esto REEMPLAZARÁ todos tus datos actuales.'
+                );
+
+                if (confirmed) {
+                    setTransactions(importedData.transactions || []);
+                    setCategories(importedData.categories || { income: [], expense: [] });
+                    setNumberFormat(importedData.numberFormat || 'eur');
+                    alert('Datos importados correctamente');
+                    setAppState('tracker');
+                    setTrackerView('transactions');
+                }
+            } catch (error) {
+                console.error('Error al importar datos:', error);
+                alert('Error al importar el archivo. Asegúrate de que sea un archivo de backup válido de Nudistracker.');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+
     const handleGoToWelcome = () => {
         const confirmLeave = window.confirm('¿Estás seguro de que quieres volver a la pantalla de inicio? Asegúrate de que tus datos estén guardados.');
         if (confirmLeave) {
@@ -643,6 +698,37 @@ interface WelcomeScreenProps {
     onClear: () => void;
 }
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSession, onClear }) => {
+    const importFileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImportClick = () => {
+        importFileInputRef.current?.click();
+    };
+
+    const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target?.result as string);
+
+                if (!importedData.transactions || !importedData.categories) {
+                    throw new Error('Formato de archivo inválido');
+                }
+
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(importedData));
+                alert('Datos importados correctamente. Haz clic en "Continuar Sesión" para verlos.');
+                window.location.reload();
+            } catch (error) {
+                console.error('Error al importar datos:', error);
+                alert('Error al importar el archivo. Asegúrate de que sea un archivo de backup válido de Nudistracker.');
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+
     return (
         <div className="welcome-container">
             <img src="https://nudistainvestor.com/wp-content/uploads/2025/10/nudsita-need-you.png" alt="Nudistracker Logo" className="welcome-logo-main" />
@@ -678,6 +764,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNew, onContinue, hasSes
                         <button className="button primary" onClick={onNew}>Nueva Sesión</button>
                         {hasSession && <button className="button" onClick={onContinue}>Continuar Sesión</button>}
                     </div>
+                    <div className="import-export-actions">
+                        <input
+                            type="file"
+                            ref={importFileInputRef}
+                            accept=".json"
+                            onChange={handleImportData}
+                            style={{ display: 'none' }}
+                        />
+                        <button className="button secondary" onClick={handleImportClick}>📂 Importar Backup</button>
+                    </div>
                     {hasSession && <button className="button text-danger" onClick={onClear}>Borrar datos y empezar de cero</button>}
                 </div>
             </div>
@@ -692,6 +788,39 @@ interface AppHeaderProps {
     onNavigate: (view: TrackerView) => void;
 }
 const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavigate }) => {
+    const [showExportMenu, setShowExportMenu] = useState(false);
+
+    const handleExportData = () => {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+        if (!savedData) {
+            alert('No hay datos para exportar');
+            return;
+        }
+
+        try {
+            const parsedData = JSON.parse(savedData);
+            const dataToExport = {
+                ...parsedData,
+                exportDate: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `nudistracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            setShowExportMenu(false);
+        } catch (error) {
+            console.error('Error al exportar datos:', error);
+            alert('Error al exportar los datos');
+        }
+    };
+
     return (
         <header className="app-header">
             <div className="app-logo-title" onClick={onGoToWelcome}>
@@ -702,6 +831,9 @@ const AppHeader: React.FC<AppHeaderProps> = ({ onGoToWelcome, activeView, onNavi
                 <button className={activeView === 'categories' ? 'active' : ''} onClick={() => onNavigate('categories')}>Categorías</button>
                 <button className={activeView === 'import' ? 'active' : ''} onClick={() => onNavigate('import')}>Importar</button>
                 <button className={activeView === 'how-it-works' ? 'active' : ''} onClick={() => onNavigate('how-it-works')}>Cómo funciona</button>
+                <div className="export-menu-container">
+                    <button className="export-button" onClick={handleExportData} title="Exportar Backup">💾</button>
+                </div>
             </nav>
         </header>
     );
