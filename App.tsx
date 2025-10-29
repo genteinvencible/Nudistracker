@@ -52,59 +52,68 @@ const normalizeString = (str: string): string => {
 };
 
 const parseDate = (dateValue: any): string => {
-    if (!dateValue) return 'Invalid Date';
+    if (!dateValue && dateValue !== 0) return 'Invalid Date';
 
-    // Handle string dates first (most common)
+    // Handle Date objects first
+    if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
+        const day = dateValue.getDate().toString().padStart(2, '0');
+        const month = (dateValue.getMonth() + 1).toString().padStart(2, '0');
+        const year = dateValue.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    // Handle Excel's numeric date format
+    if (typeof dateValue === 'number' && dateValue > 0 && dateValue < 100000) {
+        // Excel date: days since 1900-01-01 (with 1900 leap year bug)
+        const excelEpoch = new Date(Date.UTC(1899, 11, 30));
+        const date = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
+        const day = date.getUTCDate().toString().padStart(2, '0');
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+        const year = date.getUTCFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    // Handle string dates
     if (typeof dateValue === 'string') {
         const trimmed = dateValue.trim();
+        if (!trimmed) return 'Invalid Date';
 
-        // Check if it's already in DD/MM/YYYY or similar format
+        // DD/MM/YYYY or DD-MM-YYYY format (European)
         if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(trimmed)) {
             const parts = trimmed.split(/[\/\-]/);
-            // Assume European format DD/MM/YYYY
             const day = parseInt(parts[0], 10);
             const month = parseInt(parts[1], 10);
-            const year = parts[2].length === 2 ? 2000 + parseInt(parts[2], 10) : parseInt(parts[2], 10);
+            let year = parseInt(parts[2], 10);
 
-            if (day >= 1 && day <= 31 && month >= 1 && month <= 12) {
+            // Handle 2-digit years
+            if (year < 100) {
+                year += year < 50 ? 2000 : 1900;
+            }
+
+            // Validate ranges
+            if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
                 const date = new Date(year, month - 1, day);
-                if (!isNaN(date.getTime())) {
-                    return date.toLocaleDateString('es-ES');
+                // Verify the date is valid (handles Feb 30, etc.)
+                if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+                    return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
                 }
             }
         }
 
-        // Check if it's in YYYY-MM-DD format (ISO)
+        // YYYY-MM-DD format (ISO)
         if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/.test(trimmed)) {
-            const date = new Date(trimmed);
-            if (!isNaN(date.getTime())) {
-                return date.toLocaleDateString('es-ES');
+            const parts = trimmed.split(/[\/\-]/);
+            const year = parseInt(parts[0], 10);
+            const month = parseInt(parts[1], 10);
+            const day = parseInt(parts[2], 10);
+
+            if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year >= 1900 && year <= 2100) {
+                const date = new Date(year, month - 1, day);
+                if (date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+                    return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
+                }
             }
         }
-
-        // Try standard Date parsing as fallback
-        const date = new Date(trimmed);
-        if (!isNaN(date.getTime())) {
-            return date.toLocaleDateString('es-ES');
-        }
-    }
-
-    // Handle Excel's numeric date format (only if it's a reasonable Excel date)
-    // Excel dates typically range from 1 (1900-01-01) to ~45000 (year 2023+)
-    if (typeof dateValue === 'number' && dateValue > 0 && dateValue < 100000) {
-        const excelEpoch = new Date(1899, 11, 30);
-        const date = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
-        // Basic timezone offset correction
-        const userTimezoneOffset = date.getTimezoneOffset() * 60000;
-        const correctedDate = new Date(date.getTime() + userTimezoneOffset);
-        if (!isNaN(correctedDate.getTime())) {
-            return correctedDate.toLocaleDateString('es-ES');
-        }
-    }
-
-    // Fallback for Date objects
-    if (dateValue instanceof Date && !isNaN(dateValue.getTime())) {
-        return dateValue.toLocaleDateString('es-ES');
     }
 
     return 'Invalid Date';
@@ -494,19 +503,25 @@ const App: React.FC = () => {
         }
 
         try {
+            const dateIndex = fileHeaders.indexOf(mappedColumns.date);
+            const descIndex = fileHeaders.indexOf(mappedColumns.description);
+            const amountIndex = fileHeaders.indexOf(mappedColumns.amount);
+
+            if (dateIndex === -1 || descIndex === -1 || amountIndex === -1) {
+                throw new Error('Columnas mapeadas no encontradas en el archivo');
+            }
+
+            let invalidDatesCount = 0;
+            let emptyDescriptionsCount = 0;
+
             const newTransactions = parsedData.map((row, index) => {
-                const dateIndex = fileHeaders.indexOf(mappedColumns.date);
-                const descIndex = fileHeaders.indexOf(mappedColumns.description);
-                const amountIndex = fileHeaders.indexOf(mappedColumns.amount);
-
-                if (dateIndex === -1 || descIndex === -1 || amountIndex === -1) {
-                    throw new Error('Columnas mapeadas no encontradas en el archivo');
-                }
-
                 const date = parseDate(row[dateIndex]);
-                const description = String(row[descIndex] || '');
+                const description = String(row[descIndex] || '').trim();
                 const rawAmount = row[amountIndex] || 0;
                 const amount = parseAmount(rawAmount, numberFormat);
+
+                if (date === 'Invalid Date') invalidDatesCount++;
+                if (!description) emptyDescriptionsCount++;
 
                 return {
                     id: `staged-${Date.now()}-${index}`,
@@ -516,11 +531,35 @@ const App: React.FC = () => {
                     category: '',
                     ignored: false,
                 };
-            }).filter(t => t.description && t.amount !== 0);
+            }).filter(t => {
+                // Keep transactions that have a valid date and description
+                return t.date !== 'Invalid Date' && t.description !== '';
+            });
 
             if (newTransactions.length === 0) {
-                alert('No se encontraron transacciones válidas en el archivo');
+                let errorMsg = 'No se encontraron transacciones válidas en el archivo.\\n\\n';
+                if (invalidDatesCount > 0) {
+                    errorMsg += `${invalidDatesCount} filas con fechas inválidas.\\n`;
+                }
+                if (emptyDescriptionsCount > 0) {
+                    errorMsg += `${emptyDescriptionsCount} filas sin descripción.\\n`;
+                }
+                errorMsg += '\\nVerifica que hayas mapeado correctamente las columnas.';
+                alert(errorMsg);
                 return;
+            }
+
+            // Warn user if some rows were skipped
+            const skippedRows = parsedData.length - newTransactions.length;
+            if (skippedRows > 0) {
+                const continueImport = window.confirm(
+                    `Se encontraron ${newTransactions.length} transacciones válidas.\\n\\n` +
+                    `${skippedRows} filas fueron omitidas por:\\n` +
+                    (invalidDatesCount > 0 ? `- ${invalidDatesCount} fechas inválidas\\n` : '') +
+                    (emptyDescriptionsCount > 0 ? `- ${emptyDescriptionsCount} descripciones vacías\\n` : '') +
+                    `\\n¿Deseas continuar con las transacciones válidas?`
+                );
+                if (!continueImport) return;
             }
 
             const autoCategorized = newTransactions.map(t => {
@@ -951,11 +990,14 @@ const ImportView: React.FC<ImportViewProps> = ({ onFileChange, fileInputRef, fil
                                                     const isAmountColumn = mappedColumns.amount && header === mappedColumns.amount;
 
                                                     if (isDateColumn) {
-                                                        const rawValue = String(cell || '');
+                                                        const rawValue = cell;
                                                         const parsedDate = parseDate(cell);
+                                                        const displayRaw = typeof rawValue === 'number'
+                                                            ? `${rawValue} (Excel date)`
+                                                            : String(rawValue || '');
                                                         return (
-                                                            <td key={j} title={`Original: ${rawValue} → Interpretado: ${parsedDate}`}>
-                                                                {rawValue} → {parsedDate}
+                                                            <td key={j} title={`Tipo: ${typeof rawValue}`} className={parsedDate === 'Invalid Date' ? 'invalid-date' : ''}>
+                                                                {displayRaw} → {parsedDate}
                                                             </td>
                                                         );
                                                     }

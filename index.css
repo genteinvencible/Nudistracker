@@ -43,6 +43,12 @@
     transform: translateY(-2px);
 }
 
+.invalid-date {
+    background-color: #ffebee !important;
+    color: #c62828 !important;
+    font-weight: 600;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
